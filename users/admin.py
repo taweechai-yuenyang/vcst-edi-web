@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
-from .models import Corporation,Factory,Section,Position,Department,Employee,ManagementUser,Supplier
+from .models import Corporation,Factory, LineNotification,Section,Position,Department,Employee,ManagementUser,Supplier
 
 # Register your models here.
 class CorporationAdmin(admin.ModelAdmin):
@@ -176,7 +176,7 @@ class ManagementUserAdmin(UserAdmin):
             'fields': ('last_login', 'date_joined')
         }),
         ('Additional info', {
-            'fields': ('formula_user_id','position_id','department_id', 'section_id','is_approve','avatar_url','signature_img', 'description')
+            'fields': ('formula_user_id','position_id','department_id', 'section_id','line_notification_id','is_approve','avatar_url','signature_img', 'description')
         })
     )
     
@@ -184,6 +184,10 @@ class ManagementUserAdmin(UserAdmin):
         # if obj.position_id is None:
         #     pos = Position.objects.get(code="-")
         #     obj.position_id = pos
+        
+        if obj.line_notification_id is None:
+            pos = LineNotification.objects.get(name="TEST")
+            obj.line_notification_id = pos
         
         if obj.formula_user_id is None:
             pos = Employee.objects.get(code="TEST")
@@ -289,6 +293,9 @@ class SupplierAdmin(admin.ModelAdmin):
     
     pass
 
+class LineNotificationAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Corporation, CorporationAdmin,)
 admin.site.register(Factory, FactoryAdmin,)
 admin.site.register(Section, SectionAdmin,)
@@ -297,3 +304,4 @@ admin.site.register(Department, DepartmentAdmin,)
 admin.site.register(Employee, EmployeeAdmin,)
 admin.site.register(ManagementUser, ManagementUserAdmin,)
 admin.site.register(Supplier, SupplierAdmin,)
+admin.site.register(LineNotification, LineNotificationAdmin)

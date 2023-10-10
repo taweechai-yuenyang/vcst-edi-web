@@ -65,6 +65,7 @@ class Product(models.Model):
     unit_id = models.ForeignKey(Unit, verbose_name="Unit ID", on_delete=models.SET_NULL, null=True)
     code = models.CharField(max_length=150, verbose_name="Code", unique=True, null=False)
     name = models.CharField(max_length=250, verbose_name="Name", null=False)
+    price = models.FloatField(verbose_name="Price", null=True, blank=True, default="0.0")
     description = models.TextField(verbose_name="Description",blank=True, null=True)
     img = models.ImageField(verbose_name="Image")
     is_active = models.BooleanField(verbose_name="Is Active", default=True)

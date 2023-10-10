@@ -91,6 +91,7 @@ class ProductAdmin(admin.ModelAdmin):
         'prod_type_id',
         'code',
         'name',
+        'price',
         'description',
         'is_active',
         'updated_at',

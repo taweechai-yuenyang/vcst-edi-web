@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Corporation,Factory,Section,Position,Department,Employee,ManagementUser,Supplier
+from .models import Corporation,Factory, LineNotification,Section,Position,Department,Employee,ManagementUser,Supplier
 
 
 
@@ -42,6 +42,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ('id','corporation_id','code','name','description','is_active','created_on','updated_on',)
+        
+class LineNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LineNotification
+        fields = ('id','token','name','description','is_active','created_on','updated_on',)
         
 class ManagementUserSerializer(serializers.ModelSerializer):
     class Meta:

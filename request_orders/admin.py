@@ -1,7 +1,9 @@
 from io import BytesIO
+import os
 from django.contrib import admin, messages
 from admin_confirm import AdminConfirmMixin
 from django.utils.html import format_html
+import requests
 
 from books.models import Book, RefType
 from products.models import Product
@@ -63,9 +65,11 @@ class UploadEDIAdmin(admin.ModelAdmin):
             data = pd.read_excel(BytesIO(file_in_memory)).to_numpy()
             addData = []
             for r in data:
-                if float(r[5]) > 0:
-                    partID = Product.objects.get(code=str(r[3]).strip())
-                    addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
+                # if float(r[5]) > 0:
+                #     partID = Product.objects.get(code=str(r[3]).strip())
+                #     addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
+                partID = Product.objects.get(code=str(r[3]).strip())
+                addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
 
             # show Message
             try:
@@ -113,14 +117,30 @@ class UploadEDIAdmin(admin.ModelAdmin):
                     ordID.ro_item = item
                     ordID.ro_qty = qty
                     ordID.save()
-
+                    
                 obj.is_generated = True
                 obj.save()
                 messages.success(
                     request, f'อัพโหลดเอกสาร {obj.edi_filename} เลขที่ {documentNo} เรียบร้อยแล้ว')
-
-                # SendNotifiedMessage
                 
+                # SendNotifiedMessage
+                docs = RequestOrder.objects.filter(edi_file_id=obj).values()
+                n = []
+                for doc in docs:
+                    n.append(doc['ro_no'])
+                
+                
+                token = request.user.line_notification_id.token
+                if bool(os.environ.get('DEBUG_MODE')):
+                    token = os.environ.get("LINE_TOKEN")
+                    
+                msg = f"message=เรียนแผนก PU\nขณะนี้ทางแผนก Planning ทำการอัพโหลดเอกสาร {documentNo} จำนวน {len(n)} รายการ\nกรุณาทำการยืนยันให้ด้วยคะ"
+                headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': f'Bearer {token}'
+                }
+                response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
+                print(response.text)
                 
             except Exception as e:
                 # messages.error(request, f'เกิดข้อผิดพลาดในการอัพโหลดเอกสาร')
@@ -288,7 +308,18 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
     
     def response_change(self, request, obj):
         if "_approve_request_order" in request.POST:
-            pass
+            msg = f"เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj} เรียบร้อยแล้ว\nรบกวนทางแผนก Planning ทำการอัพโหลดเอกสาร Revise 1 ด้วยคะ"
+            token = request.user.line_notification_id.token
+            if bool(os.environ.get('DEBUG_MODE')):
+                token = os.environ.get("LINE_TOKEN")
+                
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': f'Bearer {token}'
+            }
+            response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
+            print(response.text)
+            
         return super().response_change(request, object)
     pass
 

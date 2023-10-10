@@ -165,7 +165,7 @@ STORAGES = {
 # # Static files (CSS, JavaScript, Images)
 # # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATIC_URL = "static/"
-# STATIC_ROOT = [BASE_DIR / "static/"]
+STATIC_ROOT = [BASE_DIR / "static/"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -311,6 +311,8 @@ JAZZMIN_SETTINGS = {
         "users.ManagementUser": "fas fa-user-friends",
         "users.Factory": "fas fa-warehouse",
         "users.Corporation": "fas fa-building",
+        "users.LineNotification": "fas fa-exclamation-circle",
+        "users.Employee": "fas fa-database",
         "request_orders.UploadEDI": "fas fa-upload",
         'request_orders.RequestOrder': "fas fa-tasks",
         # 'request_orders.PurchaseRequest': "fas fa-money-check",

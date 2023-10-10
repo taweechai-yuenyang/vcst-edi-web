@@ -12,12 +12,13 @@ userLogIn = 'username=taweechai&password=ADSads123'
 dbHost = '192.168.20.9:1433'
 dbUser = 'fm1234'
 dbPassword = 'x2y2'
-dbName = 'Formula'
 
-# dbHost = str(os.environ.get('FORMULA_HOSTNAME')).strip()+":"+str(os.environ.get('FORMULA_PORT')).strip()
-# dbUser =  os.environ.get('FORMULA_USERNAME')
-# dbPassword = os.environ.get('FORMULA_PASSWORD')
-# dbName = os.environ.get('FORMULA_USERNAME')
+if bool(os.environ.get('DEBUG_MODE')):
+    dbHost = 'localhost:1433'
+    dbUser = 'sa'
+    dbPassword = 'ADSads123'
+
+dbName = 'Formula'
 dbCharset = 'TIS-620'
 
 
@@ -488,9 +489,31 @@ def sync_revise_type():
 
             print(f"{i}.Sync Status Code:{response.status_code} DataID: {r}")
             
-        print(f"============== Department Type =============")
+        print(f"============== Revise Type =============")
         print(err)
         print(f"=======================================")
+        
+def sync_line_notification():
+    response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
+    if response.status_code == 200:
+        obj = response.json()
+        token = obj['access']
+        payload = f'token=6O36DfLBEe1aUDbplg7KcDx6I5opvorLKLY8x2TML1s&name=TEST&description=ทดสอบ&is_active=1'.encode('utf8')
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': f'Bearer {token}'}
+
+        response = requests.request(
+            "POST", f"{urlAPI}/api/users/line_notifications", headers=headers, data=payload)
+
+        # print(response.text)
+        if response.status_code != 201:
+            if response.status_code == 401:
+                response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
+                obj = response.json()
+                token = obj['access']
+
+        print(f"============== Line Notification =============")
 
 def sync_department():
     response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
@@ -631,7 +654,7 @@ def sync_product():
         obj = response.json()
         token = obj['access']
         conn = pymssql.connect(host=dbHost, user=dbUser,password=dbPassword, charset=dbCharset, database=dbName, tds_version=r'7.0')
-        SQL_QUERY = f"""select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCNAME,p.FCNAME2,g.FCCODE,u.FCCODE from PROD p inner join PDGRP g on p.FCPDGRP=g.FCSKID inner join UM u on p.FCUM=u.FCSKID where p.FCTYPE in ('1','5') order by p.FCCODE,p.FCNAME"""
+        SQL_QUERY = f"""select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCNAME,p.FCNAME2,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p inner join PDGRP g on p.FCPDGRP=g.FCSKID inner join UM u on p.FCUM=u.FCSKID where p.FCTYPE in ('1','5') order by p.FCCODE,p.FCNAME"""
         # SQL_QUERY = f"""select FCSKID,FCTYPE,FCCODE,FCNAME,FCNAME2 from PROD where FCCODE in ('50104-6006', '50502-529', '5T078-63911-06-D3', 'FDL4 1843', 'W9524-56411-03', 'W95EB-0004A')"""
         cursor = conn.cursor()
         cursor.execute(SQL_QUERY)
@@ -644,10 +667,11 @@ def sync_product():
             FCNAME2 = str(f"{r[4]}").strip()
             FCPDGRP = str(f"{r[5]}").strip()
             FCUM = str(f"{r[6]}").strip()
+            FNPRICE = str(f"{r[7]}").strip()
             if len(FCNAME2) == 0:
                 FCNAME2 = f"{FCCODE}-{FCNAME}"
 
-            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&name={FCNAME}&description={FCNAME2}&is_active=1'.encode(
+            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&name={FCNAME}&price={FNPRICE}&description={FCNAME2}&is_active=1'.encode(
                 'utf8')
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -679,18 +703,19 @@ def sync_product():
 
 
 if __name__ == "__main__":
-    # sync_supplier()
-    # sync_factory()
-    # sync_corporation()
-    # sync_employee()
-    # sync_product_type()
-    # sync_um()
-    # sync_order_type()
-    # sync_product_group()
-    # sync_section()
-    # sync_department()
-    # sync_position()
+    sync_supplier()
+    sync_factory()
+    sync_corporation()
+    sync_employee()
+    sync_product_type()
+    sync_um()
+    sync_order_type()
+    sync_product_group()
+    sync_section()
+    sync_department()
+    sync_position()
     sync_revise_type()
-    # sync_book()
-    # # sync_book_detail()
-    # sync_product()
+    sync_book()
+    sync_line_notification()
+    # sync_book_detail()
+    sync_product()

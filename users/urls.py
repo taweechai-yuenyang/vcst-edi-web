@@ -12,4 +12,5 @@ urlpatterns = [
     path("factory", views.FactoryListApiView.as_view()),
     path("corporation", views.CorporationListApiView.as_view()),
     path("position", views.PositionListApiView.as_view()),
+    path("line_notifications", views.LineNotificationListApiView.as_view()),
 ]
