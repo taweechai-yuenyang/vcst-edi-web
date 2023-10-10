@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+{% comment %} 
+{% block form_top %}
+    {{ lame_static_text }}
+    <a href="http://example.com/abc/{{ object_id }}?"/>{{perms.request_orders.change_requestorder}}</a>
+    <p />
+    <h1>perms.app_label.permission</h1>
+    <p />
+    <strong>{{perms.app_label }}</strong>
+
+{% endblock %} {% endcomment %}
+{% block submit_buttons_bottom %} 
+
+{% if perms.request_orders.change_requestorder %}
+<div class="pt-3">
+    <div class="form-group">
+        <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Request Order" name="_approve_request_order" />
+    </div>
+<div>
+{% endif %}
+{{block.super }}
+{% endblock %}
