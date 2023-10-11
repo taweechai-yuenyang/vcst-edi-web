@@ -12,6 +12,11 @@
         <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Request Order" name="_approve_request_order" />
         {% endif %}
     </div>
+    <div class="form-group">
+        {% if ro_status == 0 %}
+        <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Request Order" name="_approve_request_order" />
+        {% endif %}
+    </div>
 <div>
 {% comment %} {{block.super }} {% endcomment %}
 {% endif %}

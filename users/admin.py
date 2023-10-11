@@ -227,7 +227,6 @@ class SupplierAdmin(admin.ModelAdmin):
     
     list_filter = (
         'is_active',
-        'user_id',
     )
     
     # list_editable = (
@@ -239,7 +238,6 @@ class SupplierAdmin(admin.ModelAdmin):
     fieldsets = (
         ("", {
             "fields": (
-                ("user_id",),
                 ("code",),
                 ("name",),
                 ("description",),

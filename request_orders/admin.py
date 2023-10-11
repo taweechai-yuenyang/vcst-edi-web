@@ -10,6 +10,8 @@ from books.models import Book, RefType, ReviseBook
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 from products.models import Product
 import pandas as pd
+
+from users.models import ManagementUser
 from .models import REQUEST_ORDER_STATUS, RequestOrderDetail, UploadEDI,RequestOrder
 
 # Register your models here.
@@ -324,7 +326,13 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
         return f'{obj.balance_qty:,}'
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            qs = super().get_queryset(request)
+            return qs
+        
+        usr = ManagementUser.objects.get(id=request.user.id)
+        print(usr.supplier_id)
+        qs = RequestOrder.objects.all()
         return qs
 
     # Set Overrides Message
@@ -435,7 +443,10 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
                         ordI.FDDATE=obj.ro_date
                         ordI.FNQTY=i.request_qty
                         ordI.FMREMARK=i.remark
-                        ordI.FNBACKQTY=i.request_qty
+                        #### Update Nagative to Positive
+                        olderQty = int(ordI.FNBACKQTY)
+                        ordI.FNBACKQTY=abs(int(i.request_qty)-olderQty)
+                        ######
                         ordI.FNPRICE=ordProd[0]['FNPRICE']
                         ordI.FNPRICEKE=ordProd[0]['FNPRICE']
                         ordI.FCSHOWCOMP=""
