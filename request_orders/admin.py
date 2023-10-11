@@ -68,9 +68,7 @@ class UploadEDIAdmin(admin.ModelAdmin):
                 obj.document_no = documentNo
                 ### Set Upload on Month with Year Number
                 obj.upload_on_month = int(str(obj.upload_date.strftime('%Y%m')))
-                obj.save()
                 ### Get Revise Type
-                print(str(obj.revise_id))
                 if int(str(obj.revise_id.code)) == 0:
                     # Read Excel
                     file_in_memory = request.FILES['edi_file'].read()
@@ -157,11 +155,13 @@ class UploadEDIAdmin(admin.ModelAdmin):
                         obj.delete()
                 else:
                     obj.delete()
-                    ordH = RequestOrder.objects.get(supplier_id=obj.supplier_id,product_group_id=r["group_id"],book_id=obj.book_id,ro_on_month=obj.upload_on_month,ro_status="1")
+                    # ordH = RequestOrder.objects.get(supplier_id=obj.supplier_id,product_group_id=r["group_id"],book_id=obj.book_id,ro_on_month=obj.upload_on_month,ro_status="1")
+                    ordH = RequestOrder.objects.filter(supplier_id=obj.supplier_id,book_id=obj.book_id,ro_on_month=obj.upload_on_month).values()
                     print(ordH)
+                        
                     messages.error(request, "กรุณาตรวจสอบข้อมูลส่วนตัวของท่านด้วย")
-        except:
-            messages.error(request, "กรุณาตรวจสอบข้อมูลส่วนตัวของท่านด้วย")
+        except Exception as ex:
+            messages.error(request, str(ex))
 
     def uploaded_at(self, obj):
         return obj.upload_date.strftime("%d-%m-%Y")

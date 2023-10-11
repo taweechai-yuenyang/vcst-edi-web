@@ -55,7 +55,7 @@ def sync_supplier():
                     
                 err.append(FCSKID)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCSKID}")
+            print(f"{i}.Sync Supplier Status Code:{response.status_code} DataID: {FCSKID}")
             i += 1
             # time.sleep(0.1)
             
@@ -99,7 +99,7 @@ def sync_product_type():
                     
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Product Type Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -139,7 +139,7 @@ def sync_factory():
                     obj = response.json()
                     token = obj['access']
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Factory Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -186,7 +186,7 @@ def sync_corporation():
                     obj = response.json()
                     token = obj['access']
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Corporation Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -226,7 +226,7 @@ def sync_um():
                     obj = response.json()
                     token = obj['access']
                     
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Unit Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -269,7 +269,7 @@ def sync_employee():
                     token = obj['access']
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Employee Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -313,7 +313,7 @@ def sync_order_type():
                     token = obj['access']
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync RefType Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -356,7 +356,7 @@ def sync_product_group():
                     token = obj['access']
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Product Group Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -399,7 +399,7 @@ def sync_section():
                     token = obj['access']
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Section Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -452,7 +452,7 @@ def sync_position():
                     token = obj['access']
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Position Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -487,7 +487,7 @@ def sync_revise_type():
                     token = obj['access']
                 err.append(r)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {r}")
+            print(f"{i}.Sync Revise Type Status Code:{response.status_code} DataID: {r}")
             i += 1
             
         print(f"============== Revise Type =============")
@@ -519,7 +519,7 @@ def sync_revise_book():
                     token = obj['access']
                 err.append(r)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {r}")
+            print(f"{i}.Sync Revise Book Status Code:{response.status_code} DataID: {r}")
             i += 1
             
         print(f"============== Revise Book =============")
@@ -581,7 +581,7 @@ def sync_department():
                     token = obj['access']
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Department Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -629,7 +629,7 @@ def sync_book():
                     
                 err.append(FCCODE)
 
-            print(f"{i}.Sync Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync Book Status Code:{response.status_code} DataID: {FCCODE}")
             i += 1
             # time.sleep(0.1)
             
@@ -748,8 +748,8 @@ if __name__ == "__main__":
     sync_department()
     sync_position()
     sync_revise_type()
-    sync_revise_book()
     sync_book()
+    sync_revise_book()
     sync_line_notification()
     # sync_book_detail()
     sync_product()
