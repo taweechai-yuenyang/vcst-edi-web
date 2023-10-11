@@ -13,7 +13,8 @@ BOOKING_TYPE = [
 class EDIReviseType(models.Model):
     # select p.FCSKID,p.FCCODE,p.FCNAME,p.FCNAME2 from PRODTYPE p
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
-    name = models.CharField(max_length=50, verbose_name="Code", unique=True, blank=False, null=False)
+    code = models.IntegerField(verbose_name="Code", unique=True, blank=False, null=False)
+    name = models.CharField(max_length=50, verbose_name="Name", unique=True, blank=False, null=False)
     description = models.TextField(verbose_name="Description",blank=True, null=True)
     is_active = models.BooleanField(verbose_name="Is Active", default=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -85,3 +86,21 @@ class BookDetail(models.Model):
         db_table = "tbmBookDetail"
         verbose_name = "Book Detail"
         verbose_name_plural = "Book Detail"
+        
+class ReviseBook(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    ref_type_id = models.ForeignKey(RefType, verbose_name="Ref. Type ID", on_delete=models.SET_NULL, null=True)
+    book_id = models.ForeignKey(Book, verbose_name="Book ID", on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=250, verbose_name="Name", unique=True,blank=False, null=False)
+    description = models.TextField(verbose_name="Description",blank=True, null=True)
+    is_active = models.BooleanField(default=True, verbose_name="Is Active", blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "tbmReviseBook"
+        verbose_name = "Revise Book"
+        verbose_name_plural = "Revise Book"

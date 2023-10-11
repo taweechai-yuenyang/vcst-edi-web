@@ -1,11 +1,13 @@
 from io import BytesIO
 import os
+import nanoid
 from django.contrib import admin, messages
 from admin_confirm import AdminConfirmMixin
 from django.utils.html import format_html
 import requests
 
-from books.models import Book, RefType
+from books.models import Book, RefType, ReviseBook
+from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 from products.models import Product
 import pandas as pd
 from .models import REQUEST_ORDER_STATUS, RequestOrderDetail, UploadEDI,RequestOrder
@@ -25,16 +27,19 @@ class UploadEDIAdmin(admin.ModelAdmin):
     list_filter = ['is_generated', 'document_no', 'edi_filename', 'revise_id']
 
     list_display = ('document_no', 'revise_id', 'link_edi_file', 'uploaded_at','upload_by_id', 'is_generated', 'created_on', 'updated_on')
-    fieldsets = (
-        (
-            None, {
-                "classes": ["wide", "extrapretty"],
-                'fields': [
-                    ('upload_date', 'revise_id'),
-                    'supplier_id', 'edi_file', 'description',
-                ]}
-        ),
-    )
+    # fieldsets = (
+    #     (
+    #         None, {
+    #             "classes": ["wide", "extrapretty"],
+    #             'fields': [
+    #                 ('upload_date', 'revise_id'),
+    #                 'supplier_id', 'edi_file', 'description',
+    #             ]}
+    #     ),
+    # )
+    fields = [
+        'upload_date', 'revise_id','supplier_id', 'edi_file', 'description',
+    ]
     
     def link_edi_file(self, obj):
         return format_html(f'<a href="{obj.edi_file.url}" target="_blank">{obj.edi_filename}</a>')
@@ -45,108 +50,117 @@ class UploadEDIAdmin(admin.ModelAdmin):
 
     # Default Book PR-0002
     def save_model(self, request, obj, form, change):
-        if request.user.section_id:
-            obj.edi_filename = obj.edi_file.name
-            # Set Section From User
-            obj.section_id = request.user.section_id
-            # Set Book From Default
-            ordType = RefType.objects.get(code=r"PR")
-            book = Book.objects.get(order_type_id=ordType, code=r'0002')
-            obj.book_id = book
-            # Set upload_by_id
-            obj.upload_by_id = request.user
-            # Generate Document No
-            docNo = f"EDI{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
-            n = UploadEDI.objects.filter(document_no__gte={docNo}).count()
-            documentNo = f"{docNo}{(n + 1):05d}"
-            obj.document_no = documentNo
-            # Read Excel
-            file_in_memory = request.FILES['edi_file'].read()
-            data = pd.read_excel(BytesIO(file_in_memory)).to_numpy()
-            addData = []
-            for r in data:
-                # if float(r[5]) > 0:
-                #     partID = Product.objects.get(code=str(r[3]).strip())
-                #     addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
-                partID = Product.objects.get(code=str(r[3]).strip())
-                addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
-
-            # show Message
-            try:
-                super().save_model(request, obj, form, change)
-                for r in addData:
-                    # Filter Request Order Header
-                    ordID = None
-                    try:
-                        ordID = RequestOrder.objects.get(supplier_id=obj.supplier_id, section_id=request.user.section_id,product_group_id=r["group_id"], book_id=obj.book_id, ro_date=obj.upload_date)
-                    except Exception as e:
-                        rndNo = f"RO{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
-                        rnd = f"{rndNo}{(RequestOrder.objects.filter(ro_no__gte=rndNo).count() + 1):05d}"
-                        ordID = RequestOrder(
-                            edi_file_id=obj,
-                            supplier_id=obj.supplier_id,
-                            section_id=request.user.section_id,
-                            product_group_id=r["group_id"],
-                            book_id=obj.book_id,
-                            ro_no=rnd,
-                            ro_date=obj.upload_date,
-                            ro_by_id=request.user,
-                            ro_status="0")
-                        ordID.save()
-                        pass
-
-                    # Create Detail
-                    ordDetail = RequestOrderDetail(request_order_id=ordID, product_id=r["partName"], request_qty=r["qty"], balance_qty=r["qty"], request_by_id=request.user, request_status="0", remark=r["remark"])
-                    ordDetail.save()
-
-                    # Update Qty/Item Request Order
-                    orderDetail = RequestOrderDetail.objects.filter(
-                        request_order_id=ordID)
-                    qty = 0
-                    item = 0
-                    seq = 1
-                    for r in orderDetail:
-                        qty += r.request_qty
-                        item += 1
-                        # Update Seq Order Seq
-                        r.seq = seq
-                        r.save()
-                        seq += 1
-
-                    ordID.edi_file_id = obj
-                    ordID.ro_item = item
-                    ordID.ro_qty = qty
-                    ordID.save()
-                    
-                obj.is_generated = True
+        try:
+            # Get Book From Revise Book
+            rvBook = ReviseBook.objects.get(name="Upload EDI")
+            if request.user.section_id:
+                ### Check Revise Status
+                obj.edi_filename = obj.edi_file.name
+                # Set Section From User
+                obj.section_id = request.user.section_id
+                obj.book_id = rvBook.book_id
+                # Set upload_by_id
+                obj.upload_by_id = request.user
+                # Generate Document No
+                docNo = f"EDI{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
+                n = UploadEDI.objects.filter(document_no__gte={docNo}).count()
+                documentNo = f"{docNo}{(n + 1):05d}"
+                obj.document_no = documentNo
+                ### Set Upload on Month with Year Number
+                obj.upload_on_month = int(str(obj.upload_date.strftime('%Y%m')))
                 obj.save()
-                messages.success(
-                    request, f'อัพโหลดเอกสาร {obj.edi_filename} เลขที่ {documentNo} เรียบร้อยแล้ว')
-                
-                # SendNotifiedMessage
-                docs = RequestOrder.objects.filter(edi_file_id=obj).values()
-                n = []
-                for doc in docs:
-                    n.append(doc['ro_no'])
-                
-                
-                token = request.user.line_notification_id.token
-                if bool(os.environ.get('DEBUG_MODE')):
-                    token = os.environ.get("LINE_TOKEN")
-                    
-                msg = f"message=เรียนแผนก PU\nขณะนี้ทางแผนก Planning ทำการอัพโหลดเอกสาร {documentNo} จำนวน {len(n)} รายการ\nกรุณาทำการยืนยันให้ด้วยคะ"
-                headers = {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': f'Bearer {token}'
-                }
-                response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
-                print(response.text)
-                
-            except Exception as e:
-                # messages.error(request, f'เกิดข้อผิดพลาดในการอัพโหลดเอกสาร')
-                messages.error(request, str(e))
-                obj.delete()
-        else:
+                ### Get Revise Type
+                print(str(obj.revise_id))
+                if int(str(obj.revise_id.code)) == 0:
+                    # Read Excel
+                    file_in_memory = request.FILES['edi_file'].read()
+                    data = pd.read_excel(BytesIO(file_in_memory)).to_numpy()
+                    addData = []
+                    for r in data:
+                        # if float(r[5]) > 0:
+                        #     partID = Product.objects.get(code=str(r[3]).strip())
+                        #     addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
+                        partID = Product.objects.get(code=str(r[3]).strip())
+                        addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
+                    # show Message
+                    try:
+                        super().save_model(request, obj, form, change)
+                        for r in addData:
+                            # Filter Request Order Header
+                            ordID = None
+                            try:
+                                ordID = RequestOrder.objects.get(supplier_id=obj.supplier_id, section_id=request.user.section_id,product_group_id=r["group_id"], book_id=obj.book_id, ro_date=obj.upload_date)
+                            except Exception as e:
+                                rndNo = f"RO{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
+                                rnd = f"{rndNo}{(RequestOrder.objects.filter(ro_no__gte=rndNo).count() + 1):05d}"
+                                ordID = RequestOrder(
+                                    edi_file_id=obj,
+                                    supplier_id=obj.supplier_id,
+                                    section_id=request.user.section_id,
+                                    product_group_id=r["group_id"],
+                                    book_id=obj.book_id,
+                                    ro_no=rnd,
+                                    ro_date=obj.upload_date,
+                                    ro_on_month=obj.upload_on_month,
+                                    ro_by_id=request.user,
+                                    ro_status="0")
+                                ordID.save()
+                                pass
+                            # Create Detail
+                            ordDetail = RequestOrderDetail(request_order_id=ordID, product_id=r["partName"], request_qty=r["qty"], balance_qty=r["qty"], request_by_id=request.user, request_status="0", remark=r["remark"])
+                            ordDetail.save()
+                            # Update Qty/Item Request Order
+                            orderDetail = RequestOrderDetail.objects.filter(
+                                request_order_id=ordID)
+                            qty = 0
+                            item = 0
+                            seq = 1
+                            for r in orderDetail:
+                                qty += r.request_qty
+                                item += 1
+                                # Update Seq Order Seq
+                                r.seq = seq
+                                r.save()
+                                seq += 1
+                            ordID.edi_file_id = obj
+                            ordID.ro_item = item
+                            ordID.ro_qty = qty
+                            ordID.save()
+
+                        obj.is_generated = True
+                        obj.save()
+                        messages.success(
+                            request, f'อัพโหลดเอกสาร {obj.edi_filename} เลขที่ {documentNo} เรียบร้อยแล้ว')
+
+                        # SendNotifiedMessage
+                        docs = RequestOrder.objects.filter(edi_file_id=obj).values()
+                        n = []
+                        for doc in docs:
+                            n.append(doc['ro_no'])
+
+
+                        token = request.user.line_notification_id.token
+                        if bool(os.environ.get('DEBUG_MODE')):
+                            token = os.environ.get("LINE_TOKEN")
+
+                        msg = f"message=เรียนแผนก PU\nขณะนี้ทางแผนก Planning ทำการอัพโหลดเอกสาร {documentNo} จำนวน {len(n)} รายการ\nกรุณาทำการยืนยันให้ด้วยคะ"
+                        headers = {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': f'Bearer {token}'
+                        }
+                        response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
+                        print(response.text)
+
+                    except Exception as e:
+                        # messages.error(request, f'เกิดข้อผิดพลาดในการอัพโหลดเอกสาร')
+                        messages.error(request, str(e))
+                        obj.delete()
+                else:
+                    obj.delete()
+                    ordH = RequestOrder.objects.get(supplier_id=obj.supplier_id,product_group_id=r["group_id"],book_id=obj.book_id,ro_on_month=obj.upload_on_month,ro_status="1")
+                    print(ordH)
+                    messages.error(request, "กรุณาตรวจสอบข้อมูลส่วนตัวของท่านด้วย")
+        except:
             messages.error(request, "กรุณาตรวจสอบข้อมูลส่วนตัวของท่านด้วย")
 
     def uploaded_at(self, obj):
@@ -186,6 +200,7 @@ class ProductRequestOrderInline(admin.TabularInline):
     # def updated_on(self, obj):
     #     # return obj.updated_on.strftime("%d %b %Y %H:%M:%S")
     #     return obj.updated_at.strftime("%d-%m-%Y %H:%M:%S")
+    
     max_num = 0
     extra = 0
     can_delete = False
@@ -306,19 +321,122 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         return super().save_model(request, obj, form, change)
     
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        ### Get object
+        obj = RequestOrder.objects.get(id=object_id)
+        ### Append Variable
+        extra_context['osm_data'] = obj
+        extra_context['ro_status'] = int(obj.ro_status)
+        extra_context['ro_revise'] = obj.edi_file_id.revise_id.code
+        return super().change_view(request, object_id, form_url, extra_context=extra_context,)
+    
     def response_change(self, request, obj):
         if "_approve_request_order" in request.POST:
-            msg = f"เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj} เรียบร้อยแล้ว\nรบกวนทางแผนก Planning ทำการอัพโหลดเอกสาร Revise 1 ด้วยคะ"
+            ### Line Notification
             token = request.user.line_notification_id.token
             if bool(os.environ.get('DEBUG_MODE')):
                 token = os.environ.get("LINE_TOKEN")
-                
+            
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': f'Bearer {token}'
             }
-            response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
-            print(response.text)
+            ### Message Notification
+            msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj} เรียบร้อยแล้ว\nรบกวนทางแผนก Planning ทำการอัพโหลดเอกสาร Revise 1 ด้วยคะ"
+            
+            ### Create PR to Formula
+            if obj.edi_file_id.revise_id.code == 0 and int(obj.ro_status) == 0:
+                # #### Create Formula OrderH
+                emp = EMPLOYEE.objects.filter(FCCODE=request.user.formula_user_id.code).values()
+                dept = DEPT.objects.filter(FCCODE=request.user.section_id.code).values()
+                sect = SECT.objects.filter(FCCODE=request.user.department_id.code).values()
+                ordBook = BOOK.objects.filter(FCREFTYPE="PR", FCCODE="0002").values()
+                supplier = COOR.objects.filter(FCCODE=obj.supplier_id.code).values()
+                fccode = obj.ro_date.strftime("%Y%m%d")[3:6]
+                ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
+                fccodeNo = f"{fccode}{ordRnd:04d}"
+                prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
+                msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {prNo} เรียบร้อยแล้ว\nรบกวนทางแผนก Planning อัพโหลดเอกสาร Revise 1 ด้วยคะ"
+                
+                ordH = OrderH(
+                        FCSKID=nanoid.generate(size=8),
+                        FCREFTYPE="PR",
+                        FCDEPT=dept[0]['FCSKID'],
+                        FCSECT=sect[0]['FCSKID'],
+                        FCBOOK=ordBook[0]['FCSKID'],
+                        FCCREATEBY=emp[0]['FCSKID'],
+                        FCAPPROVEB=emp[0]['FCSKID'],
+                        FCCODE=fccodeNo,
+                        FCREFNO=prNo,
+                        FCCOOR=supplier[0]['FCSKID'],
+                        FDDATE=obj.ro_date,
+                        FDDUEDATE=obj.ro_date,
+                        FNAMT=obj.ro_qty,
+                    )
+                ordH.save()
+                obj.ref_formula_id = ordH.FCSKID
+                
+                ### OrderI
+                # Get Order Details
+                ordDetail = RequestOrderDetail.objects.filter(request_order_id=obj).all()
+                seq = 1
+                qty = 0
+                for i in ordDetail:
+                    ### Create OrderI Formula
+                    try:
+                        ordProd = PROD.objects.filter(FCCODE=i.product_id.code,FCTYPE=i.product_id.prod_type_id.code).values()
+                        unitObj = UM.objects.filter(FCCODE=i.product_id.unit_id.code).values()
+                        ordI = OrderI(
+                            FCSKID=nanoid.generate(size=8),
+                            FCCOOR=supplier[0]['FCSKID'],
+                            FCDEPT=dept[0]['FCSKID'],
+                            FCORDERH=ordH.FCSKID,
+                            FCPROD=ordProd[0]["FCSKID"],
+                            FCPRODTYPE=ordProd[0]["FCTYPE"],
+                            FCREFTYPE="PR",
+                            FCSECT=sect[0]['FCSKID'],
+                            FCSEQ=f"{seq:03d}",
+                            FCSTUM=unitObj[0]["FCSKID"],
+                            FCUM=unitObj[0]["FCSKID"],
+                            FCUMSTD=unitObj[0]["FCSKID"],
+                            FDDATE=obj.ro_date,
+                            FNQTY=i.request_qty,
+                            FMREMARK=i.remark,
+                            FNBACKQTY=i.request_qty,
+                            FNPRICE=ordProd[0]['FNPRICE'],
+                            FNPRICEKE=ordProd[0]['FNPRICE'],
+                            FCSHOWCOMP="",
+                        )
+                        ordI.save()
+                        
+                        # Update Status Order Details
+                        i.ref_formula_id = ordI.FCSKID
+                        i.request_status = "1"
+                        
+                    except Exception as e:
+                        messages.error(request, str(e))
+                        ordH.delete()
+                        return
+
+                    # Summary Seq/Qty
+                    seq += 1
+                    qty += i.request_qty
+                    i.save()
+                
+                obj.ro_status = "1"    
+                obj.ro_qty = qty
+                obj.ro_item = (seq - 1)
+                response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
+                print(response.text)
+                
+            elif obj.edi_file_id.revise_id.code == 0:
+                print(f"Update Status: %s" % obj.ref_formula_id)
+                ordH  = OrderH.objects.filter(FCSKID=obj.ref_formula_id).values()
+                print(ordH)
+                pass
+            
+            obj.save()
             
         return super().response_change(request, object)
     pass

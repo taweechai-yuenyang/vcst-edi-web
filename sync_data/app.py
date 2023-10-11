@@ -469,9 +469,9 @@ def sync_revise_type():
         token = obj['access']
         rv = ["Revise 0", "Revise 1",]
         err = []
-        i = 1
+        i = 0
         for r in rv:
-            payload = f'name={r}&description=-&is_active=1'.encode('utf8')
+            payload = f'code={i}&name={r}&description=-&is_active=1'.encode('utf8')
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': f'Bearer {token}'}
@@ -488,8 +488,41 @@ def sync_revise_type():
                 err.append(r)
 
             print(f"{i}.Sync Status Code:{response.status_code} DataID: {r}")
+            i += 1
             
         print(f"============== Revise Type =============")
+        print(err)
+        print(f"=======================================")
+        
+def sync_revise_book():
+    response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
+    if response.status_code == 200:
+        obj = response.json()
+        token = obj['access']
+        rv = ["Revise 0"]
+        err = []
+        i = 0
+        for r in rv:
+            payload = f'ref_type_id=PR&book_id=ใบขอซื้อตัวประกอบ&name=Upload EDI&description=-&is_active=1'.encode('utf8')
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': f'Bearer {token}'}
+
+            response = requests.request(
+                "POST", f"{urlAPI}/api/books/revise_book", headers=headers, data=payload)
+
+            # print(response.text)
+            if response.status_code != 201:
+                if response.status_code == 401:
+                    response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
+                    obj = response.json()
+                    token = obj['access']
+                err.append(r)
+
+            print(f"{i}.Sync Status Code:{response.status_code} DataID: {r}")
+            i += 1
+            
+        print(f"============== Revise Book =============")
         print(err)
         print(f"=======================================")
         
@@ -715,6 +748,7 @@ if __name__ == "__main__":
     sync_department()
     sync_position()
     sync_revise_type()
+    sync_revise_book()
     sync_book()
     sync_line_notification()
     # sync_book_detail()

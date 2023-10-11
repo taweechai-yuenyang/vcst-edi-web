@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EDIReviseType,RefType,Book,BookDetail
+from .models import EDIReviseType,RefType,Book,ReviseBook
 
 # Register your models here.
 class EDIReviseTypeAdmin(admin.ModelAdmin):
@@ -16,6 +16,7 @@ class EDIReviseTypeAdmin(admin.ModelAdmin):
     )
     
     list_filter = ('is_active',)
+    sortable_by = ('name',)
     
     # ordering = ("code","name",)
     list_per_page = 25
@@ -88,8 +89,12 @@ class BookAdmin(admin.ModelAdmin):
 class BookDetailAdmin(admin.ModelAdmin):
     pass
 
+class ReviseBookAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(EDIReviseType, EDIReviseTypeAdmin,)
 admin.site.register(RefType, RefTypeAdmin,)
 admin.site.register(Book, BookAdmin,)
 # admin.site.register(BookDetail, BookDetailAdmin,)
+admin.site.register(ReviseBook, ReviseBookAdmin,)
 

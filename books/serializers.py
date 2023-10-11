@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Book, Corporation, Factory, RefType, ProductType, EDIReviseType
+from .models import Book, Corporation, Factory, RefType, ProductType, EDIReviseType, ReviseBook
 
 class ReviseTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EDIReviseType
-        fields = ('id','name','description','is_active','created_on','updated_on',)
+        fields = ('id',"code",'name','description','is_active','created_on','updated_on',)
     
 
 class RefTypeSerializer(serializers.ModelSerializer):
@@ -31,3 +31,8 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ('id','skid', 'corporation_id', 'order_type_id','code','name','prefix','description','is_active','created_on','updated_on',)
+        
+class ReviseBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviseBook
+        fields = ('id','ref_type_id','book_id','name','description','is_active','created_on','updated_on',)

@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'jazzmin',
+    'admin_confirm',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -134,19 +135,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# set this to False if you want to turn off pyodbc's connection pooling
+DATABASE_CONNECTION_POOLING = os.environ.get('IS_POOLING')
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 LANGUAGE_CODE = "en-us"
-
-# TIME_ZONE = "Asia/Bangkok"
 TIME_ZONE = "Asia/Bangkok"
-
 USE_I18N = True
-
 USE_TZ = False
 
 USE_THOUSAND_SEPARATOR = True
-
 ### Set Datetime Format
 SHORT_DATE_FORMAT = "Y-m-d"
 SHORT_DATETIME_FORMAT = "Y-m-d H:M:S"
@@ -302,6 +301,7 @@ JAZZMIN_SETTINGS = {
         "products.ProductType": "fas fa-table",
         "products.Unit": "fas fa-tags",
         "books.RefType": "fas fa-layer-group",
+        "books.ReviseBook": "fas fa-bookmark",
         "products.Product": "fas fa-database",
         "products.ProductGroup": "fas fa-tags",
         "users.Position": "fas fa-key",
@@ -387,4 +387,14 @@ JAZZMIN_UI_TWEAKS = {
         "danger": "btn-danger",
         "success": "btn-success"
     }
+}
+
+### Set File Storage
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
 }

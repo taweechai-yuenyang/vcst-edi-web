@@ -8,8 +8,11 @@ from users.models import ManagementUser, Section, Supplier
 
 REQUEST_ORDER_STATUS = [
     ('0', 'Wait Approve'),
-    ('1', 'Approve'),
-    ('2', 'Reject'),
+    ('1', 'Wait Rv1.'),
+    ('2', 'Approve'),
+    ('3', 'Reject'),
+    ('4', 'Success'),
+    ('5', 'Cancel'),
 ]
 
 # Create your models here.
@@ -23,6 +26,7 @@ class UploadEDI(models.Model):
     edi_filename = models.CharField(max_length=150,verbose_name="FILE EDI",blank=True, null=True)
     document_no = models.CharField(max_length=150,verbose_name="Document No.",blank=True, null=True, editable=False)
     upload_date = models.DateField(verbose_name="Upload On",default=django.utils.timezone.now)
+    upload_on_month = models.IntegerField(verbose_name="Upload On Month",default="0", null=True, blank=True)
     description = models.TextField(verbose_name="Description",blank=True, null=True)
     upload_by_id = models.ForeignKey(ManagementUser, verbose_name="Upload By ID", blank=True, null=True, on_delete=models.SET_NULL, editable=False)
     is_generated = models.BooleanField(verbose_name="Is Generated", default=False)
@@ -48,6 +52,7 @@ class RequestOrder(models.Model):
     book_id = models.ForeignKey(Book, verbose_name="Book ID", blank=True,null=True, on_delete=models.SET_NULL)
     ro_no = models.CharField(max_length=50,verbose_name="Request No.", blank=True, null=True)
     ro_date = models.DateField(verbose_name="Request Date",  null=True, blank=True)
+    ro_on_month = models.IntegerField(verbose_name="Request On Month",  null=True, blank=True, default="0")
     ro_item = models.IntegerField(verbose_name="Item", blank=True,null=True, default="0")
     ro_qty = models.FloatField(verbose_name="Qty.", blank=True,null=True, default="0")
     ro_price = models.FloatField(verbose_name="Price.", blank=True,null=True, default="0")
