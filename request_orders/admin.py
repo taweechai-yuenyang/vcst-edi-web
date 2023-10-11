@@ -326,15 +326,26 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
         return f'{obj.balance_qty:,}'
 
     def get_queryset(self, request):
+        qs = super().get_queryset(request)
         if request.user.is_superuser:
-            qs = super().get_queryset(request)
             return qs
         
-        # usr = ManagementUser.objects.get(id=request.user.id)
-        # print(usr.supplier_id)
-        qs = RequestOrder.objects.all()
-        return qs
+        sup_id = []
+        # if request.user.groups.filter(name='Supplier').exists():
+        #     usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        #     for u in usr:
+        #         sup_id.append(u.supplier_id)
+        
+        usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        for u in usr:
+            sup_id.append(u.supplier_id)
+            
+        if len(sup_id) > 0:     
+            obj = qs.filter(supplier_id__in=sup_id)
+            return obj
 
+        return qs
+        
     # Set Overrides Message
     def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=False):
         pass
