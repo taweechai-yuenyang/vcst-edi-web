@@ -10,8 +10,6 @@
     <div class="form-group">
         {% if ro_status == 0 %}
         <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Request Order" name="_approve_request_order" />
-        {% elif ro_status == 1 and ro_revise > 0 %}
-        <input type="submit" class="btn btn-danger btn-sm form-control" value="Update Revise" name="_approve_request_order" />
         {% endif %}
     </div>
 <div>

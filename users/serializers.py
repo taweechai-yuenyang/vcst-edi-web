@@ -51,4 +51,4 @@ class LineNotificationSerializer(serializers.ModelSerializer):
 class ManagementUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ManagementUser
-        fields = ('id','formula_user_id','department_id','position_id','section_id','description','avatar_url','signature_img','is_approve','is_active','created_on','updated_on',)
+        fields = ('id','supplier_id','formula_user_id','department_id','position_id','section_id','description','avatar_url','signature_img','is_approve','is_active','created_on','updated_on',)

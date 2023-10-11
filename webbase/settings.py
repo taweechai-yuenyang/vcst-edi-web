@@ -301,6 +301,7 @@ JAZZMIN_SETTINGS = {
         "products.ProductType": "fas fa-table",
         "products.Unit": "fas fa-tags",
         "books.RefType": "fas fa-layer-group",
+        "books.EDIReviseType": "fas fa-thumbtack",
         "books.ReviseBook": "fas fa-bookmark",
         "products.Product": "fas fa-database",
         "products.ProductGroup": "fas fa-tags",

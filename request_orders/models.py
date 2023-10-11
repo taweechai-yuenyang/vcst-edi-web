@@ -7,12 +7,9 @@ from products.models import Product, ProductGroup
 from users.models import ManagementUser, Section, Supplier
 
 REQUEST_ORDER_STATUS = [
-    ('0', 'Wait Approve'),
-    ('1', 'Wait Rv1.'),
-    ('2', 'Approve'),
+    ('0', 'In Progress'),
+    ('1', 'Approve'),
     ('3', 'Reject'),
-    ('4', 'Success'),
-    ('5', 'Cancel'),
 ]
 
 # Create your models here.
@@ -27,6 +24,7 @@ class UploadEDI(models.Model):
     document_no = models.CharField(max_length=150,verbose_name="Document No.",blank=True, null=True, editable=False)
     upload_date = models.DateField(verbose_name="Upload On",default=django.utils.timezone.now)
     upload_on_month = models.IntegerField(verbose_name="Upload On Month",default="0", null=True, blank=True)
+    upload_seq = models.IntegerField(verbose_name="Upload Seq", null=True, blank=True, default="0")
     description = models.TextField(verbose_name="Description",blank=True, null=True)
     upload_by_id = models.ForeignKey(ManagementUser, verbose_name="Upload By ID", blank=True, null=True, on_delete=models.SET_NULL, editable=False)
     is_generated = models.BooleanField(verbose_name="Is Generated", default=False)

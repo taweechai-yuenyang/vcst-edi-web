@@ -176,7 +176,7 @@ class ManagementUserAdmin(UserAdmin):
             'fields': ('last_login', 'date_joined')
         }),
         ('Additional info', {
-            'fields': ('formula_user_id','position_id','department_id', 'section_id','line_notification_id','is_approve','avatar_url','signature_img', 'description')
+            'fields': ('formula_user_id','position_id','department_id', 'section_id','line_notification_id','supplier_id','is_approve','avatar_url','signature_img', 'description')
         })
     )
     
