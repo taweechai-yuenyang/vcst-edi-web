@@ -6,7 +6,7 @@ from .models import Corporation,Factory, LineNotification,Section,Position,Depar
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = ('id','code','name','description','is_active','created_on','updated_on',)
+        fields = ('id','user_id','code','name','description','is_active','created_on','updated_on',)
         
 class CorporationSerializer(serializers.ModelSerializer):
     class Meta:

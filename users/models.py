@@ -129,26 +129,8 @@ class LineNotification(models.Model):
         verbose_name = "Line Notification"
         verbose_name_plural = "Line Notification"
 
-class Supplier(models.Model):
-    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
-    code = models.CharField(max_length=150, verbose_name="Code",unique=True,blank=False, null=False)
-    name = models.CharField(max_length=250, verbose_name="Name", blank=False, null=False)
-    description = models.TextField(verbose_name="Description",blank=True, null=True)
-    is_active = models.BooleanField(verbose_name="Is Active", default=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return self.name
-    
-    class Meta:
-        db_table = "tbmSupplier"
-        verbose_name = "Supplier"
-        verbose_name_plural = "Supplier"
-        
 class ManagementUser(AbstractUser):
     formula_user_id = models.ForeignKey(Employee, verbose_name="Formula User ID", blank=True, null=True, on_delete=models.SET_NULL)
-    supplier_id = models.ManyToManyField(Supplier, blank=True, verbose_name="Supplier ID",null=True)
     department_id = models.ForeignKey(Department, blank=True, verbose_name="Department ID",null=True, on_delete=models.SET_NULL)
     position_id = models.ForeignKey(Position, blank=True, verbose_name="Position ID",null=True, on_delete=models.SET_NULL)
     section_id = models.ForeignKey(Section, blank=True, verbose_name="Section ID",null=True, on_delete=models.SET_NULL)
@@ -171,3 +153,22 @@ class ManagementUser(AbstractUser):
         db_table = "ediUser"
         verbose_name = "User"
         verbose_name_plural = "User"
+    
+class Supplier(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    user_id = models.ManyToManyField(ManagementUser, blank=True, verbose_name="User ID",null=True)
+    # skid = models.CharField(max_length=8, verbose_name="Formula ID", unique=True)
+    code = models.CharField(max_length=150, verbose_name="Code",unique=True,blank=False, null=False)
+    name = models.CharField(max_length=250, verbose_name="Name", blank=False, null=False)
+    description = models.TextField(verbose_name="Description",blank=True, null=True)
+    is_active = models.BooleanField(verbose_name="Is Active", default=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "tbmSupplier"
+        verbose_name = "Supplier"
+        verbose_name_plural = "Supplier"

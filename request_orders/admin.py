@@ -330,8 +330,8 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
             qs = super().get_queryset(request)
             return qs
         
-        usr = ManagementUser.objects.get(id=request.user.id)
-        print(usr.supplier_id)
+        # usr = ManagementUser.objects.get(id=request.user.id)
+        # print(usr.supplier_id)
         qs = RequestOrder.objects.all()
         return qs
 
