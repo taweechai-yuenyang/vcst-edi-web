@@ -139,7 +139,7 @@ class Supplier(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return self.name
+        return f"{self.code}-{self.name}"
     
     class Meta:
         db_table = "tbmSupplier"

@@ -21,6 +21,7 @@ from rest_framework_simplejwt import views as jv
 from users import urls as user_urls
 from products import urls as product_urls
 from books import urls as book_urls
+from request_orders import urls as request_orders_urls
 
 admin.site.site_title = "EDI Web Application"
 admin.site.site_header = "EDI Web Application"
@@ -32,11 +33,13 @@ admin.site.empty_value_display = "-"
 
 urlpatterns = [
     path("portal/", admin.site.urls, name="portal"),
+    path("order/", include(request_orders_urls), name="export_order"),
     path("api/users/", include(user_urls)),
     path("api/products/", include(product_urls)),
     path("api/books/", include(book_urls)),
     path('api-auth/', include('rest_framework.urls')),
     path('api/token/', jv.TokenObtainPairView.as_view()),
     path('api/token/refresh/', jv.TokenRefreshView.as_view()),
+    path("admin/", RedirectView.as_view(url="portal/", permanent=True)),
     path("", RedirectView.as_view(url="portal/", permanent=True)),
 ]

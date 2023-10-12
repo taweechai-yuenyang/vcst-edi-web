@@ -20,9 +20,11 @@
 <div>
 {% comment %} {{block.super }} {% endcomment %}
 {% endif %}
-<div class="pt-3">
-    <div class="form-group">
-        <input type="submit" class="btn btn-success btn-sm form-control" value="Download Request Order" name="_download_request_order" />
-    </div>
+<div class="pt-1">
+    <a  type="button" target="_blank" 
+        class="btn btn-success btn-sm" 
+        href="/order/excel/{{object_id}}">
+        Download Request Order
+    </a>
 <div>
 {% endblock %}

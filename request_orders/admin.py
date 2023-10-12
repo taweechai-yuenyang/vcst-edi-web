@@ -363,7 +363,7 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
         ### Append Variable
         extra_context['osm_data'] = obj
         extra_context['ro_status'] = int(obj.ro_status)
-        extra_context['ro_revise'] = obj.edi_file_id.revise_id.code
+        extra_context['ro_revise'] = obj.edi_file_id.upload_seq
         return super().change_view(request, object_id, form_url, extra_context=extra_context,)
     
     def response_change(self, request, obj):
@@ -509,33 +509,6 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
             response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
             print(response.text)
             obj.save()
-            
-        elif '_download_request_order' in request.POST:
-            response = HttpResponse(content_type='application/ms-excel')
-            response['Content-Disposition'] = 'attachment; filename="users.xls"'
-            
-            wb = xlwt.Workbook(encoding='utf-8')
-            ws = wb.add_sheet('Users')
-            # Sheet header, first row
-            row_num = 0
-            font_style = xlwt.XFStyle()
-            font_style.font.bold = True
-
-            columns = ['Username', 'First name', 'Last name', 'Email address', ]
-
-            for col_num in range(len(columns)):
-                ws.write(row_num, col_num, columns[col_num], font_style)
-
-            # Sheet body, remaining rows
-            font_style = xlwt.XFStyle()
-
-            rows = ManagementUser.objects.all().values_list('username', 'first_name', 'last_name', 'email')
-            for row in rows:
-                row_num += 1
-                for col_num in range(len(row)):
-                    ws.write(row_num, col_num, row[col_num], font_style)
-
-            wb.save(response)
             
         return super().response_change(request, object)
     pass
