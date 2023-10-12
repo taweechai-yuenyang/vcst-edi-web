@@ -31,12 +31,12 @@ admin.site.empty_value_display = "-"
 
 
 urlpatterns = [
-    path("web/", admin.site.urls, name="admin"),
+    path("portal/", admin.site.urls, name="portal"),
     path("api/users/", include(user_urls)),
     path("api/products/", include(product_urls)),
     path("api/books/", include(book_urls)),
     path('api-auth/', include('rest_framework.urls')),
     path('api/token/', jv.TokenObtainPairView.as_view()),
     path('api/token/refresh/', jv.TokenRefreshView.as_view()),
-    path("", RedirectView.as_view(url="web/", permanent=True)),
+    path("", RedirectView.as_view(url="portal/", permanent=True)),
 ]
