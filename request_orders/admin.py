@@ -508,6 +508,9 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
             print(response.text)
             obj.save()
             
+        elif '_download_request_order' in request.POST:
+            print("download")
+            
         return super().response_change(request, object)
     pass
 
