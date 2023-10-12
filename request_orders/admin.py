@@ -23,6 +23,7 @@ def make_request_request(modeladmin, request, queryset):
     
 class UploadEDIAdmin(admin.ModelAdmin):
     # fields = ('section_id', 'book_id', 'supplier_id', 'product_group_id','edi_file','upload_date','revise_id','description',)
+    change_list_template = "admin/change_list_template.html"
     confirm_change = True
     confirmation_fields = ['edi_filename', 'is_generated']
 
@@ -86,8 +87,8 @@ class UploadEDIAdmin(admin.ModelAdmin):
                 data = pd.read_excel(BytesIO(file_in_memory)).to_numpy()
                 addData = []
                 for r in data:
-                    partID = Product.objects.get(code=str(r[3]).strip())
-                    addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[5], "remark": str(r[1]).strip()})
+                    partID = Product.objects.get(code=str(r[1]).strip())
+                    addData.append({"partName": partID, "group_id": partID.prod_group_id,"qty": r[4], "remark": str(r[3]).strip()})
                     
                 ### Get Revise Type
                 # if int(str(obj.revise_id.code)) == 0:
