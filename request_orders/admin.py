@@ -99,15 +99,16 @@ class UploadEDIAdmin(admin.ModelAdmin):
                         ordID = None
                         try:
                             ordID = RequestOrder.objects.get(supplier_id=obj.supplier_id, section_id=request.user.section_id,product_group_id=r["group_id"], book_id=obj.book_id, ro_on_month = int(str(obj.upload_date.strftime('%Y%m'))))
-                            ordID.edi_file_id=obj
-                            ordID.supplier_id=obj.supplier_id
-                            ordID.section_id=request.user.section_id
-                            ordID.product_group_id=r["group_id"]
-                            ordID.book_id=obj.book_id
-                            ordID.ro_date=obj.upload_date
-                            ordID.ro_on_month=obj.upload_on_month
-                            ordID.ro_by_id=request.user
-                            ordID.ro_status="0"
+                            if ordID.is_po is False:
+                                ordID.edi_file_id=obj
+                                ordID.supplier_id=obj.supplier_id
+                                ordID.section_id=request.user.section_id
+                                ordID.product_group_id=r["group_id"]
+                                ordID.book_id=obj.book_id
+                                ordID.ro_date=obj.upload_date
+                                ordID.ro_on_month=obj.upload_on_month
+                                ordID.ro_by_id=request.user
+                                ordID.ro_status="0"
                             
                         except RequestOrder.DoesNotExist as ex:
                             rndNo = f"RO{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
@@ -126,39 +127,39 @@ class UploadEDIAdmin(admin.ModelAdmin):
                             pass
                             
                         ordID.save()
+                        if ordID.is_po is False:    
+                            # Create Detail
+                            ordDetail = None
+                            try:
+                                ordDetail = RequestOrderDetail.objects.get(request_order_id=ordID, product_id=r["partName"])
+                                ordDetail.request_qty=r["qty"]
+                                ordDetail.balance_qty=r["qty"]
+                                ordDetail.request_by_id=request.user
+                                ordDetail.request_status="0"
+                                ordDetail.remark=f'Revise {r["remark"]}'
+                                
+                            except RequestOrderDetail.DoesNotExist as ex:
+                                ordDetail = RequestOrderDetail(request_order_id=ordID, product_id=r["partName"], request_qty=r["qty"], balance_qty=r["qty"], request_by_id=request.user, request_status="0", remark=r["remark"])
+                                pass
                             
-                        # Create Detail
-                        ordDetail = None
-                        try:
-                            ordDetail = RequestOrderDetail.objects.get(request_order_id=ordID, product_id=r["partName"])
-                            ordDetail.request_qty=r["qty"]
-                            ordDetail.balance_qty=r["qty"]
-                            ordDetail.request_by_id=request.user
-                            ordDetail.request_status="0"
-                            ordDetail.remark=f'Revise {r["remark"]}'
-                            
-                        except RequestOrderDetail.DoesNotExist as ex:
-                            ordDetail = RequestOrderDetail(request_order_id=ordID, product_id=r["partName"], request_qty=r["qty"], balance_qty=r["qty"], request_by_id=request.user, request_status="0", remark=r["remark"])
-                            pass
-                        
-                        ordDetail.save()
-                        # Update Qty/Item Request Order
-                        orderDetail = RequestOrderDetail.objects.filter(request_order_id=ordID)
-                        qty = 0
-                        item = 0
-                        seq = 1
-                        for r in orderDetail:
-                            qty += r.request_qty
-                            item += 1
-                            
-                            # Update Seq Order Seq
-                            r.seq = seq
-                            r.save()
-                            seq += 1
-                        ordID.edi_file_id = obj
-                        ordID.ro_item = item
-                        ordID.ro_qty = qty
-                        ordID.save()
+                            ordDetail.save()
+                            # Update Qty/Item Request Order
+                            orderDetail = RequestOrderDetail.objects.filter(request_order_id=ordID)
+                            qty = 0
+                            item = 0
+                            seq = 1
+                            for r in orderDetail:
+                                qty += r.request_qty
+                                item += 1
+                                
+                                # Update Seq Order Seq
+                                r.seq = seq
+                                r.save()
+                                seq += 1
+                            ordID.edi_file_id = obj
+                            ordID.ro_item = item
+                            ordID.ro_qty = qty
+                            ordID.save()
                         
                     obj.is_generated = True
                     obj.save()
@@ -224,7 +225,7 @@ class ProductRequestOrderInline(admin.TabularInline):
     extra = 0
     can_delete = False
     can_add = False
-    show_change_link = True
+    show_change_link = False
 
     def has_change_permission(self, request, obj):
         return True
@@ -365,6 +366,12 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
         extra_context['osm_data'] = obj
         extra_context['ro_status'] = int(obj.ro_status)
         extra_context['ro_revise'] = obj.edi_file_id.upload_seq
+        ### If Group is Planning check PR status
+        isPo = False
+        if request.user.groups.filter(name='Planning').exists():
+            isPo = obj.ref_formula_id != None
+    
+        extra_context['send_to_po'] = isPo
         return super().change_view(request, object_id, form_url, extra_context=extra_context,)
     
     def response_change(self, request, obj):

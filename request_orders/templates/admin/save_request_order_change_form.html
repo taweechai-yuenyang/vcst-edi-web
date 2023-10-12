@@ -5,24 +5,22 @@
 {% endblock %} {% endcomment %}
 {% block submit_buttons_bottom %} 
 
-{% if perms.request_orders.change_requestorder %}
+{% if perms.request_orders.change_requestorder and ro_status == 0 %}
 <div class="pt-3">
     <div class="form-group">
-        {% if ro_status == 0 %}
         <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Request Order" name="_approve_request_order" />
-        {% endif %}
     </div>
-    {% comment %} <div class="form-group">
-        {% if ro_status == 0 %}
-        <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Request Order" name="_approve_request_order" />
-        {% endif %}
-    </div> {% endcomment %}
 <div>
 {% comment %} {{block.super }} {% endcomment %}
 {% endif %}
+{% if send_to_po %}
+<div class="form-group pt-2">
+    <input type="submit" class="btn btn-danger btn-sm form-control" value="Create PO" name="_move_to_po" />
+</div>
+{% endif %}
 <div class="pt-1">
     <a  type="button" target="_blank" 
-        class="btn btn-success btn-sm" 
+        class="btn btn-success btn-sm form-control" 
         href="/order/excel/{{object_id}}">
         Download Request Order
     </a>

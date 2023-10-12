@@ -9,7 +9,8 @@ from users.models import ManagementUser, Section, Supplier
 REQUEST_ORDER_STATUS = [
     ('0', 'In Progress'),
     ('1', 'Approve'),
-    ('3', 'Reject'),
+    ('2', 'Success'),
+    ('3', 'Reject')
 ]
 
 # Create your models here.
@@ -58,6 +59,7 @@ class RequestOrder(models.Model):
     ro_status = models.CharField(max_length=1, choices=REQUEST_ORDER_STATUS,verbose_name="Request Status", default="0")
     supplier_download_count = models.IntegerField(verbose_name="Supplier Download Count", default="0", null=True, blank=True)
     ref_formula_id = models.CharField(max_length=8, verbose_name="Ref. Formula ID", blank=True, null=True)
+    is_po = models.BooleanField(verbose_name="Is PO", default=False)
     is_sync = models.BooleanField(verbose_name="Is Sync", default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
