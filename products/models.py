@@ -73,9 +73,10 @@ class Product(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return self.name
+        return f"{self.code}"
     
     class Meta:
         db_table = "tbmProduct"
         verbose_name = "Product"
         verbose_name_plural = "Product"
+        ordering = ("code","name")

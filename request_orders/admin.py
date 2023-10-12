@@ -75,9 +75,9 @@ class UploadEDIAdmin(admin.ModelAdmin):
                 obj.upload_by_id = request.user
                 # Generate Document No
                 docNo = f"EDI{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
-                n = UploadEDI.objects.filter(upload_on_month__lte=int(str(obj.upload_date.strftime('%Y%m')))).count() + 1
-                obj.upload_seq = n - 1
-                documentNo = f"{docNo}{(n):05d}"
+                n = UploadEDI.objects.filter(upload_on_month=int(str(obj.upload_date.strftime('%Y%m'))),supplier_id=obj.supplier_id).count()
+                obj.upload_seq = n
+                documentNo = f"{docNo}{(n + 1):05d}"
                 obj.document_no = documentNo
                 ### Set Upload on Month with Year Number
                 obj.upload_on_month = int(str(obj.upload_date.strftime('%Y%m')))
@@ -134,7 +134,7 @@ class UploadEDIAdmin(admin.ModelAdmin):
                             ordDetail.balance_qty=r["qty"]
                             ordDetail.request_by_id=request.user
                             ordDetail.request_status="0"
-                            ordDetail.remark=r["remark"]
+                            ordDetail.remark=f'Revise {r["remark"]}'
                             
                         except RequestOrderDetail.DoesNotExist as ex:
                             ordDetail = RequestOrderDetail(request_order_id=ordID, product_id=r["partName"], request_qty=r["qty"], balance_qty=r["qty"], request_by_id=request.user, request_status="0", remark=r["remark"])
