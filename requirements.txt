@@ -9,6 +9,7 @@ Django==4.2.6
 django-admin-confirm==1.0.0
 django-admin-extra-buttons==1.5.6
 django-admin-shortcuts==2.1.1
+django-clearcache==1.2.1
 django-filter==23.3
 django-import-export==3.3.1
 django-jazzmin==2.6.0
