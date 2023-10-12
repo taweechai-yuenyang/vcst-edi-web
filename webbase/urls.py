@@ -32,7 +32,7 @@ admin.site.empty_value_display = "-"
 
 
 urlpatterns = [
-    path("portal/", admin.site.urls, name="portal"),
+    path("portal/", admin.site.urls, name="admin"),
     path("order/", include(request_orders_urls), name="export_order"),
     path("api/users/", include(user_urls)),
     path("api/products/", include(product_urls)),
@@ -40,6 +40,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api/token/', jv.TokenObtainPairView.as_view()),
     path('api/token/refresh/', jv.TokenRefreshView.as_view()),
-    path("admin/", RedirectView.as_view(url="portal/", permanent=True)),
-    path("", RedirectView.as_view(url="portal/", permanent=True)),
+    path("admin/", RedirectView.as_view(url="/portal/", permanent=True)),
+    path("", RedirectView.as_view(url="/portal/", permanent=True)),
 ]
