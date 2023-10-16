@@ -1,0 +1,8 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+    {% comment %} {{ block.super }} {% endcomment %}
+    <div>
+        {% load static %}
+        <a href="/portal/forecasts/fileforecast/add/" class="btn float-right btn-info"><i class="fas fa-upload"></i>&nbsp;Upload Forecast</a>
+    </div>
+{% endblock %}

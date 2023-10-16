@@ -34,7 +34,7 @@ class FileForecast(models.Model):
     class Meta:
         db_table = "ediFileUpload"
         verbose_name = "FileForecast"
-        verbose_name_plural = "1.Upload Forecast"
+        verbose_name_plural = "Upload Forecast"
         
 class OpenPDS(models.Model):
     # REQUEST ORDER
@@ -64,7 +64,7 @@ class OpenPDS(models.Model):
     class Meta:
         db_table = "ediOpenPDS"
         verbose_name = "ediOpenPDS"
-        verbose_name_plural = "2.Open PDS"
+        verbose_name_plural = "Open PDS"
         ordering = ('ro_status','ro_date','ro_no')
         
 class OpenPDSDetail(models.Model):
