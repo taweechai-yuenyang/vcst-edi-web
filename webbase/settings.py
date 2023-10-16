@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'books.apps.BooksConfig',
     'request_orders.apps.RequestOrdersConfig',
     'formula_vcst.apps.FormulaVcstConfig',
+    'forecasts.apps.ForecastsConfig',
 ]
 
 MIDDLEWARE = [
@@ -204,7 +205,7 @@ JAZZMIN_SETTINGS = {
     "login_logo_dark": None,
 
     # CSS classes that are applied to the logo above
-    "site_logo_classes": "img-circle",
+    # "site_logo_classes": "img-circle",
 
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
     "site_icon": None,

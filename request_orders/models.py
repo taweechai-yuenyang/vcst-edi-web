@@ -19,7 +19,7 @@ class UploadEDI(models.Model):
     section_id = models.ForeignKey(Section, verbose_name="Section ID", blank=True,null=True, on_delete=models.SET_NULL)
     revise_id = models.ForeignKey(EDIReviseType, verbose_name="Revise Type ID", blank=True,null=True, on_delete=models.SET_NULL)
     book_id = models.ForeignKey(Book, verbose_name="Book ID", blank=True,null=True, on_delete=models.SET_NULL)
-    supplier_id = models.ForeignKey(Supplier, verbose_name="Supplier ID", blank=False, on_delete=models.CASCADE)
+    # supplier_id = models.ForeignKey(Supplier, verbose_name="Supplier ID", blank=False, on_delete=models.CASCADE)
     edi_file = models.FileField(upload_to='static/edi/%Y-%m-%d/', verbose_name="FILE EDI", null=False, blank=False)
     edi_filename = models.CharField(max_length=150,verbose_name="FILE EDI",blank=True, null=True)
     document_no = models.CharField(max_length=150,verbose_name="Document No.",blank=True, null=True, editable=False)
@@ -37,8 +37,8 @@ class UploadEDI(models.Model):
     
     class Meta:
         db_table = "ediFileUpload"
-        verbose_name = "FileEDI"
-        verbose_name_plural = "1.Upload File EDI"
+        verbose_name = "FileForecast"
+        verbose_name_plural = "1.Upload Forecast"
         
 
 class RequestOrder(models.Model):

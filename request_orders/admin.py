@@ -43,8 +43,10 @@ class UploadEDIAdmin(admin.ModelAdmin):
     #     ),
     # )
     fields = [
-        'upload_date', 'revise_id','supplier_id', 'edi_file', 'description',
+        'upload_date', 'edi_file', 'description',
     ]
+    
+    readonly_fields = ['upload_date',]
     
     def link_edi_file(self, obj):
         return format_html(f'<a href="{obj.edi_file.url}" target="_blank">{obj.edi_filename}</a>')
@@ -226,6 +228,7 @@ class ProductRequestOrderInline(admin.TabularInline):
     can_delete = False
     can_add = False
     show_change_link = False
+    verbose_name = "Forecast Detail"
 
     def has_change_permission(self, request, obj):
         return True
