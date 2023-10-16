@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'products.apps.ProductsConfig',
     'books.apps.BooksConfig',
-    'request_orders.apps.RequestOrdersConfig',
+    # 'request_orders.apps.RequestOrdersConfig',
     'formula_vcst.apps.FormulaVcstConfig',
     'forecasts.apps.ForecastsConfig',
 ]
