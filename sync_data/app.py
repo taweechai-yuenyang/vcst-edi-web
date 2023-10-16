@@ -467,7 +467,7 @@ def sync_revise_type():
     if response.status_code == 200:
         obj = response.json()
         token = obj['access']
-        rv = ["Revise 0", "Revise 1",]
+        rv = ["Revise 0", "Revise 1","Revise 2", "Revise 3","Revise 4", "Revise 5", "Revise 6", "Revise 7", "Revise 8"]
         err = []
         i = 0
         for r in rv:
