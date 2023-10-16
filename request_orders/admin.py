@@ -278,31 +278,40 @@ class RequestOrderAdmin(AdminConfirmMixin, admin.ModelAdmin):
     ]
 
     def get_readonly_fields(self, request, obj):
-        lst = ('product_group_id', 'supplier_id','ro_no', 'ro_item', 'ro_qty', 'ro_status',)
-        if int(obj.ro_status) == 2:
-            lst += ('book_id', 'ro_date',)
+        try:
+            lst = ('product_group_id', 'supplier_id','ro_no', 'ro_item', 'ro_qty', 'ro_status',)
+            if int(obj.ro_status) == 2:
+                lst += ('book_id', 'ro_date',)
 
-        return lst
+            return lst
+        except:
+            pass
+        
+        return ('product_group_id', 'supplier_id','ro_no', 'ro_item', 'ro_qty',)
 
     def status(self, obj):
-        data = REQUEST_ORDER_STATUS[int(obj.ro_status)]
-        txtClass = "text-bold"
-        if int(obj.ro_status) == 0:
-            txtClass = "text-danger text-bold"
+        try:
+            data = REQUEST_ORDER_STATUS[int(obj.ro_status)]
+            txtClass = "text-bold"
+            if int(obj.ro_status) == 0:
+                txtClass = "text-danger text-bold"
 
-        elif int(obj.ro_status) == 1:
-            txtClass = "text-success text-bold"
+            elif int(obj.ro_status) == 1:
+                txtClass = "text-success text-bold"
 
-        elif int(obj.ro_status) == 2:
-            txtClass = "text-info"
+            elif int(obj.ro_status) == 2:
+                txtClass = "text-info"
 
-        elif int(obj.ro_status) == 3:
-            txtClass = "text-success"
+            elif int(obj.ro_status) == 3:
+                txtClass = "text-success"
 
-        elif int(obj.ro_status) == 4:
-            txtClass = "text-danger"
+            elif int(obj.ro_status) == 4:
+                txtClass = "text-danger"
 
-        return format_html(f"<span class='{txtClass}'>{data[1]}</span>")
+            return format_html(f"<span class='{txtClass}'>{data[1]}</span>")
+        
+        except:
+            pass
 
     status.short_description = 'Status'
 
