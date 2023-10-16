@@ -151,20 +151,10 @@ USE_THOUSAND_SEPARATOR = True
 SHORT_DATE_FORMAT = "Y-m-d"
 SHORT_DATETIME_FORMAT = "Y-m-d H:M:S"
 
-### Set File Storage
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
-
-
 # # Static files (CSS, JavaScript, Images)
 # # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / "static",]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -205,10 +195,10 @@ JAZZMIN_SETTINGS = {
     # "site_brand": "EDI",
 
     # # # Logo to use for your site, must be present in static files, used for brand on top left
-    # "site_logo": "image/vcs.png",
+    "site_logo": "image/menu_logo.png",
 
     # # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
-    # "login_logo": "image/vcs.png",
+    "login_logo": "image/vcs_login.png",
 
     # Logo to use for login form in dark themes (defaults to login_logo)
     "login_logo_dark": None,
