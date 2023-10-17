@@ -1,0 +1,28 @@
+{% extends "admin/change_form.html" %}
+{% comment %} {% block form_top %}
+    {{ lame_static_text }}
+    <a href="http://example.com/abc/{{ object_id }}"/>{{perms.forecasts}}</a>
+{% endblock %} {% endcomment %}
+{% block submit_buttons_bottom %} 
+
+{% if perms.forecasts.change_openpds and pds_status == 0 %}
+<div class="pt-3">
+    <div class="form-group">
+        <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Forecast" name="_approve_forecast" />
+    </div>
+<div>
+{% comment %} {{block.super }} {% endcomment %}
+{% endif %}
+{% comment %} {% if send_to_po %}
+<div class="form-group pt-2">
+    <input type="submit" class="btn btn-danger btn-sm form-control" value="Create PO" name="_move_to_po" />
+</div>
+{% endif %} {% endcomment %}
+<div class="pt-1">
+    <a  type="button" target="_blank" 
+        class="btn btn-success btn-sm form-control" 
+        href="/forecast/download/{{object_id}}">
+        Download Forecast
+    </a>
+<div>
+{% endblock %}

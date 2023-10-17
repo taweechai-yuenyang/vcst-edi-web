@@ -5,4 +5,5 @@ from . import views
 
 urlpatterns = [
     path('logging/<str:id>', views.export_excel),
+    path('download/<str:id>', views.download_forecast),
 ]

@@ -158,6 +158,7 @@ class UploadEDIAdmin(admin.ModelAdmin):
                                 r.seq = seq
                                 r.save()
                                 seq += 1
+                                
                             ordID.edi_file_id = obj
                             ordID.ro_item = item
                             ordID.ro_qty = qty
