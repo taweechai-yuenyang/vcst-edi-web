@@ -24,7 +24,8 @@ class FileForecast(models.Model):
     upload_seq = models.IntegerField(verbose_name="Upload Seq", null=True, blank=True, default="0")
     description = models.TextField(verbose_name="Description",blank=True, null=True)
     upload_by_id = models.ForeignKey(ManagementUser, verbose_name="Upload By ID", blank=True, null=True, on_delete=models.SET_NULL, editable=False)
-    is_generated = models.BooleanField(verbose_name="Is Generated", default=False)
+    is_generated = models.BooleanField(verbose_name="Is Generated", default=False,blank=True, null=True)
+    is_active = models.BooleanField(verbose_name="Is Active", default=False,blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -96,3 +97,33 @@ class OpenPDSDetail(models.Model):
         verbose_name = "Open PDS Detail"
         verbose_name_plural = "Open PDS Detail"
         ordering = ('seq','product_id','created_at','updated_at')
+        
+class PDSErrorLogs(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    file_name = models.UUIDField(max_length=36, verbose_name="File Forecast")
+    row_num = models.IntegerField(verbose_name="Row")
+    item = models.IntegerField(verbose_name="Item")
+    part_code = models.CharField(max_length=50, verbose_name="Part Code")
+    part_no = models.CharField(max_length=50, verbose_name="Part No.")
+    part_name = models.CharField(max_length=50, verbose_name="Part Name")
+    supplier = models.CharField(max_length=50, verbose_name="Supplier")
+    model = models.CharField(max_length=50, verbose_name="Model")
+    rev_0 = models.IntegerField(verbose_name="Rev.0",default=0, blank=True, null=True)
+    rev_1 = models.IntegerField(verbose_name="Rev.1",default=0, blank=True, null=True)
+    rev_2 = models.IntegerField(verbose_name="Rev.2",default=0, blank=True, null=True)
+    rev_3 = models.IntegerField(verbose_name="Rev.3",default=0, blank=True, null=True)
+    rev_4 = models.IntegerField(verbose_name="Rev.4",default=0, blank=True, null=True)
+    rev_5 = models.IntegerField(verbose_name="Rev.5",default=0, blank=True, null=True)
+    rev_6 = models.IntegerField(verbose_name="Rev.6",default=0, blank=True, null=True)
+    rev_7 = models.IntegerField(verbose_name="Rev.7",default=0, blank=True, null=True)
+    remark = models.TextField(verbose_name="Remark", blank=True, null=True)
+    is_error = models.BooleanField(verbose_name="Is Error", default=True, blank=True, null=True)
+    is_success = models.BooleanField(verbose_name="Is Success", default=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = "ediPDSErrorLogs"
+        verbose_name = "PDS Error Logging"
+        verbose_name_plural = "PDS Error Logging"
+        ordering = ('row_num','item','created_at','updated_at')

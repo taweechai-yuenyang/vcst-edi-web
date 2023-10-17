@@ -267,7 +267,7 @@ JAZZMIN_SETTINGS = {
     "hide_apps": [],
 
     # Hide these models when generating side menu (e.g auth.user)
-    # "hide_models": ["forecasts.FileForecast","forecasts.OpenPDSDetail",],
+    "hide_models": ["forecasts.FileForecast","forecasts.OpenPDSDetail","forecasts.PDSErrorLogs",],
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
     "order_with_respect_to": ["auth", "supplier", "supplier.Supplier", "supplier.RefType",],

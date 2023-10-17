@@ -22,6 +22,7 @@ from users import urls as user_urls
 from products import urls as product_urls
 from books import urls as book_urls
 # from request_orders import urls as request_orders_urls
+from forecasts import urls as forecast_urls
 
 admin.site.site_title = "EDI Web Application"
 admin.site.site_header = "EDI Web Application"
@@ -33,7 +34,7 @@ admin.site.empty_value_display = "-"
 
 urlpatterns = [
     path("portal/", admin.site.urls, name="admin"),
-    # path("order/", include(request_orders_urls), name="export_order"),
+    path("forecast/", include(forecast_urls), name="export_error_logs"),
     path("api/users/", include(user_urls)),
     path("api/products/", include(product_urls)),
     path("api/books/", include(book_urls)),

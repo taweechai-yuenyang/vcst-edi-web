@@ -27,6 +27,10 @@ def sync_supplier():
     if response.status_code == 200:
         obj = response.json()
         token = obj['access']
+        payload = f'code=-&name=ไม่ระบุ&description=-&is_active=1'.encode('utf8')
+        headers = {'Content-Type': 'application/x-www-form-urlencoded','Authorization': f'Bearer {token}'}
+        response = requests.request("POST", f"{urlAPI}/api/users/supplier", headers=headers, data=payload)
+            
         conn = pymssql.connect(host=dbHost, user=dbUser,password=dbPassword, charset=dbCharset, database=dbName, tds_version=r'7.0')
         SQL_QUERY = f"""select FCSKID,FCCODE,FCNAME from COOR c WHERE FCISSUPP='Y' order by c.FCCODE,c.FCNAME"""
         cursor = conn.cursor()
