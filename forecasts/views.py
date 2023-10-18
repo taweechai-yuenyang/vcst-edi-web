@@ -2,9 +2,22 @@ from datetime import datetime
 import xlwt
 from django.http import HttpResponse
 from django.template import loader
+from io import BytesIO
+from django.template.loader import get_template
+from xhtml2pdf import pisa  
 from forecasts.models import OpenPDS, OpenPDSDetail, PDSErrorLogs
 
 from users.models import ManagementUser
+
+# defining the function to convert an HTML file to a PDF file
+def __html_to_pdf(template_src, context_dict={}):
+     template = get_template(template_src)
+     html  = template.render(context_dict)
+     result = BytesIO()
+     pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+     if not pdf.err:
+         return HttpResponse(result.getvalue(), content_type='application/pdf')
+     return None
 
 # Create your views here.
 def export_excel(request, id):
@@ -137,3 +150,14 @@ def download_forecast(request, id):
         
     wb.save(response)
     return response
+
+def test_reporting(request, id):
+    # # # return HttpResponse(f"Hello world!: {id}")
+    # pds = OpenPDS.objects.get(id=id)
+    # template = loader.get_template("reports/forecast.html")
+    # context = {
+    #     "obj": pds,
+    # }
+    # return HttpResponse(template.render(context, request))
+    pdf = __html_to_pdf("reports/forecast.html")
+    return HttpResponse(pdf, content_type='application/pdf')

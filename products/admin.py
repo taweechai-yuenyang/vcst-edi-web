@@ -90,6 +90,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = (
         'prod_type_id',
         'code',
+        'no',
         'name',
         'price',
         'description',
@@ -99,6 +100,7 @@ class ProductAdmin(admin.ModelAdmin):
     
     search_fields = (
         'code',
+        'no',
         'name',
     )
     

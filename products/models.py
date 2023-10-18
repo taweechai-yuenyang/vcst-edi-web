@@ -64,6 +64,7 @@ class Product(models.Model):
     prod_group_id = models.ForeignKey(ProductGroup, verbose_name="Product Group ID", on_delete=models.SET_NULL, null=True)
     unit_id = models.ForeignKey(Unit, verbose_name="Unit ID", on_delete=models.SET_NULL, null=True)
     code = models.CharField(max_length=150, verbose_name="Code", unique=True, null=False)
+    no = models.CharField(max_length=250, verbose_name="No", null=False)
     name = models.CharField(max_length=250, verbose_name="Name", null=False)
     price = models.FloatField(verbose_name="Price", null=True, blank=True, default="0.0")
     description = models.TextField(verbose_name="Description",blank=True, null=True)

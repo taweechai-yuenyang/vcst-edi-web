@@ -691,24 +691,47 @@ def sync_product():
         obj = response.json()
         token = obj['access']
         conn = pymssql.connect(host=dbHost, user=dbUser,password=dbPassword, charset=dbCharset, database=dbName, tds_version=r'7.0')
-        SQL_QUERY = f"""select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCNAME,p.FCNAME2,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p inner join PDGRP g on p.FCPDGRP=g.FCSKID inner join UM u on p.FCUM=u.FCSKID where p.FCTYPE in ('1','5') order by p.FCCODE,p.FCNAME"""
-        # SQL_QUERY = f"""select FCSKID,FCTYPE,FCCODE,FCNAME,FCNAME2 from PROD where FCCODE in ('50104-6006', '50502-529', '5T078-63911-06-D3', 'FDL4 1843', 'W9524-56411-03', 'W95EB-0004A')"""
+        SQL_QUERY = f"""select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCSNAME,p.FCNAME,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p inner join PDGRP g on p.FCPDGRP=g.FCSKID inner join UM u on p.FCUM=u.FCSKID where p.FCTYPE in ('1','5') order by p.FCCODE,p.FCNAME"""
+        # SQL_QUERY = f"""
+        #   select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCSNAME,p.FCNAME,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p
+        #   inner join PDGRP g on p.FCPDGRP=g.FCSKID
+        #   inner join UM u on p.FCUM=u.FCSKID
+        #   where p.FCTYPE in ('1','5') and p.FCCODE='01053-51025'
+        #   order by p.FCCODE,p.FCNAME"""
         cursor = conn.cursor()
         cursor.execute(SQL_QUERY)
         err = []
+        
         i = 1
         for r in cursor.fetchall():
             FCTYPE = str(f"{r[1]}").strip()
             FCCODE = str(f"{r[2]}").strip()
-            FCNAME = str(f"{r[3]}").strip()
-            FCNAME2 = str(f"{r[4]}").strip()
+            FCSNAME = str(f"{r[3]}").strip()
+            FCNAME = str(f"{r[4]}").strip()
             FCPDGRP = str(f"{r[5]}").strip()
             FCUM = str(f"{r[6]}").strip()
             FNPRICE = str(f"{r[7]}").strip()
-            if len(FCNAME2) == 0:
-                FCNAME2 = f"{FCCODE}-{FCNAME}"
+            
+            FCNO = FCSNAME.find("-")
+            if FCNO < 0:
+                FCNO = FCNAME
+            else:
+                sp1 = FCSNAME.find(" ")
+                if sp1 >= 0:
+                    FCNO = str(FCNAME[:sp1]).strip()
+                    n = str(FCNAME[sp1:]).strip()
+                    sEnd = n.find(FCPDGRP)
+                    FCSNAME = str(n).strip()
+                    if sEnd >= 0:
+                        FCSNAME = str(n[:sEnd]).strip()
+                else:
+                    FCNO = FCSNAME
+                    fcSn = FCNAME.find(FCNO)
+                    if fcSn >= 0:
+                        FCSNAME = str(FCNAME[len(FCNO):]).strip()
+                
 
-            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&name={FCNAME}&price={FNPRICE}&description={FCNAME2}&is_active=1'.encode(
+            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&no={FCNO}&name={FCSNAME}&price={FNPRICE}&description={FCNAME}&is_active=1'.encode(
                 'utf8')
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
