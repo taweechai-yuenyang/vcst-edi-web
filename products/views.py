@@ -134,10 +134,23 @@ class ProductListApiView(APIView):
         obj['prod_group_id'] = pGrp.id
         obj['unit_id'] = pUnit.id
         
-        serializer = ProductSerializer(data=obj)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            prodID = Product.objects.get(code=request.data.get('code'))
+            prodID.prod_type_id = pType
+            prodID.prod_group_id = pGrp
+            prodID.unit_id = pUnit
+            prodID.no = request.data.get('no')
+            prodID.name = request.data.get('name')
+            prodID.price = request.data.get('price')
+            prodID.description = request.data.get('description')
+            prodID.save()
+            return Response(None, status=status.HTTP_200_OK)
+        
+        except Product.DoesNotExist:
+            serializer = ProductSerializer(data=obj)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         print(f"Error ==>")
         print(obj)

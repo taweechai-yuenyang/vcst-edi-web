@@ -335,6 +335,10 @@ class OpenPDSAdmin(admin.ModelAdmin):
     
     list_per_page = 25
     
+    # Set Overrides Message
+    def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=False):
+        pass
+    
     def pds_date_on(self, obj):
         return obj.pds_date.strftime("%d-%m-%Y")
 
@@ -383,148 +387,152 @@ class OpenPDSAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context=extra_context,)
     
     def response_change(self, request, obj):
-        if '_approve_forecast' in request.POST:
-            ### Line Notification
-            token = request.user.line_notification_id.token
-            if bool(os.environ.get('DEBUG_MODE')):
-                token = os.environ.get("LINE_TOKEN")
-            
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': f'Bearer {token}'
-            }
-            ### Message Notification
-            msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj} เรียบร้อยแล้วคะ"
-            
-            emp = EMPLOYEE.objects.filter(FCCODE=request.user.formula_user_id.code).values()
-            dept = DEPT.objects.filter(FCCODE=request.user.section_id.code).values()
-            sect = SECT.objects.filter(FCCODE=request.user.department_id.code).values()
-            ordBook = BOOK.objects.filter(FCREFTYPE="PR", FCCODE="0002").values()
-            supplier = COOR.objects.filter(FCCODE=obj.supplier_id.code).values()
-            ### Check Formula exits record
-            ordH = None
-            if obj.ref_formula_id is None:
-                ### Create PR to Formula
-                # #### Create Formula OrderH
-                fccode = obj.pds_date.strftime("%Y%m%d")[3:6]
-                ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
-                fccodeNo = f"{fccode}{ordRnd:04d}"
-                prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
-                msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {prNo} เรียบร้อยแล้วคะ"
-                ordH = OrderH(
-                    FCSKID=nanoid.generate(size=8),
-                    FCREFTYPE="PR",
-                    FCDEPT=dept[0]['FCSKID'],
-                    FCSECT=sect[0]['FCSKID'],
-                    FCBOOK=ordBook[0]['FCSKID'],
-                    FCCREATEBY=emp[0]['FCSKID'],
-                    FCAPPROVEB=emp[0]['FCSKID'],
-                    FCCODE=fccodeNo,
-                    FCREFNO=prNo,
-                    FCCOOR=supplier[0]['FCSKID'],
-                    FDDATE=obj.pds_date,
-                    FDDUEDATE=obj.pds_date,
-                    FNAMT=obj.pds_qty,
-                )
-                ordH.save()
-                obj.ref_formula_id = ordH.FCSKID
+        try:
+            if '_approve_forecast' in request.POST:
+                ### Line Notification
+                token = request.user.line_notification_id.token
+                if bool(os.environ.get('DEBUG_MODE')):
+                    token = os.environ.get("LINE_TOKEN")
                 
-            else:
-                ordH = OrderH.objects.get(FCSKID=obj.ref_formula_id)
-                ordH.FCREFTYPE="PR"
-                ordH.FCDEPT=dept[0]['FCSKID']
-                ordH.FCSECT=sect[0]['FCSKID']
-                ordH.FCBOOK=ordBook[0]['FCSKID']
-                ordH.FCCREATEBY=emp[0]['FCSKID']
-                ordH.FCAPPROVEB=emp[0]['FCSKID']
-                ordH.FCCOOR=supplier[0]['FCSKID']
-                ordH.FDDATE=obj.pds_date
-                ordH.FDDUEDATE=obj.pds_date
-                ordH.FNAMT=obj.pds_qty
-                ordH.save()
-                msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {ordH.FCREFNO} เรียบร้อยแล้วคะ"
-                pass
-            
-            ### OrderI
-            # Get Order Details
-            ordDetail = OpenPDSDetail.objects.filter(pds_id=obj).all()
-            seq = 1
-            qty = 0
-            for i in ordDetail:
-                ### Create OrderI Formula
-                try:
-                    ordProd = PROD.objects.filter(FCCODE=i.product_id.code,FCTYPE=i.product_id.prod_type_id.code).values()
-                    unitObj = UM.objects.filter(FCCODE=i.product_id.unit_id.code).values()
-                    ordI = None
+                headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': f'Bearer {token}'
+                }
+                ### Message Notification
+                msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj} เรียบร้อยแล้วคะ"
+                
+                print(request.user.section_id.code)
+                emp = EMPLOYEE.objects.filter(FCCODE=request.user.formula_user_id.code).values()
+                dept = DEPT.objects.filter(FCCODE=request.user.department_id.code).values()
+                sect = SECT.objects.filter(FCCODE=request.user.section_id.code).values()
+                ordBook = BOOK.objects.filter(FCREFTYPE="PR", FCCODE="0002").values()
+                supplier = COOR.objects.filter(FCCODE=obj.supplier_id.code).values()
+                ### Check Formula exits record
+                ordH = None
+                if obj.ref_formula_id is None:
+                    ### Create PR to Formula
+                    # #### Create Formula OrderH
+                    fccode = obj.pds_date.strftime("%Y%m%d")[3:6]
+                    ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
+                    fccodeNo = f"{fccode}{ordRnd:04d}"
+                    prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
+                    msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {prNo} เรียบร้อยแล้วคะ"
+                    ordH = OrderH(
+                        FCSKID=nanoid.generate(size=8),
+                        FCREFTYPE="PR",
+                        FCDEPT=dept[0]['FCSKID'],
+                        FCSECT=sect[0]['FCSKID'],
+                        FCBOOK=ordBook[0]['FCSKID'],
+                        FCCREATEBY=emp[0]['FCSKID'],
+                        FCAPPROVEB=emp[0]['FCSKID'],
+                        FCCODE=fccodeNo,
+                        FCREFNO=prNo,
+                        FCCOOR=supplier[0]['FCSKID'],
+                        FDDATE=obj.pds_date,
+                        FDDUEDATE=obj.pds_date,
+                        FNAMT=obj.pds_qty,
+                    )
+                    ordH.save()
+                    obj.ref_formula_id = ordH.FCSKID
+                    
+                else:
+                    ordH = OrderH.objects.get(FCSKID=obj.ref_formula_id)
+                    ordH.FCREFTYPE="PR"
+                    ordH.FCDEPT=dept[0]['FCSKID']
+                    ordH.FCSECT=sect[0]['FCSKID']
+                    ordH.FCBOOK=ordBook[0]['FCSKID']
+                    ordH.FCCREATEBY=emp[0]['FCSKID']
+                    ordH.FCAPPROVEB=emp[0]['FCSKID']
+                    ordH.FCCOOR=supplier[0]['FCSKID']
+                    ordH.FDDATE=obj.pds_date
+                    ordH.FDDUEDATE=obj.pds_date
+                    ordH.FNAMT=obj.pds_qty
+                    ordH.save()
+                    msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {ordH.FCREFNO} เรียบร้อยแล้วคะ"
+                    pass
+                
+                ### OrderI
+                # Get Order Details
+                ordDetail = OpenPDSDetail.objects.filter(pds_id=obj).all()
+                seq = 1
+                qty = 0
+                for i in ordDetail:
+                    ### Create OrderI Formula
                     try:
-                        ordI = OrderI.objects.get(FCSKID=i.ref_formula_id)
-                        ordI.FCCOOR=supplier[0]['FCSKID']
-                        ordI.FCDEPT=dept[0]['FCSKID']
-                        ordI.FCORDERH=ordH.FCSKID
-                        ordI.FCPROD=ordProd[0]["FCSKID"]
-                        ordI.FCPRODTYPE=ordProd[0]["FCTYPE"]
-                        ordI.FCREFTYPE="PR"
-                        ordI.FCSECT=sect[0]['FCSKID']
-                        ordI.FCSEQ=f"{seq:03d}"
-                        ordI.FCSTUM=unitObj[0]["FCSKID"]
-                        ordI.FCUM=unitObj[0]["FCSKID"]
-                        ordI.FCUMSTD=unitObj[0]["FCSKID"]
-                        ordI.FDDATE=obj.pds_date
-                        ordI.FNQTY=i.request_qty
-                        ordI.FMREMARK=i.remark
-                        #### Update Nagative to Positive
-                        olderQty = int(ordI.FNBACKQTY)
-                        ordI.FNBACKQTY=abs(int(i.request_qty)-olderQty)
-                        ######
-                        ordI.FNPRICE=ordProd[0]['FNPRICE']
-                        ordI.FNPRICEKE=ordProd[0]['FNPRICE']
-                        ordI.FCSHOWCOMP=""
-                            
-                    except OrderI.DoesNotExist as e:
-                        ordI = OrderI(
-                            FCSKID=nanoid.generate(size=8),
-                            FCCOOR=supplier[0]['FCSKID'],
-                            FCDEPT=dept[0]['FCSKID'],
-                            FCORDERH=ordH.FCSKID,
-                            FCPROD=ordProd[0]["FCSKID"],
-                            FCPRODTYPE=ordProd[0]["FCTYPE"],
-                            FCREFTYPE="PR",
-                            FCSECT=sect[0]['FCSKID'],
-                            FCSEQ=f"{seq:03d}",
-                            FCSTUM=unitObj[0]["FCSKID"],
-                            FCUM=unitObj[0]["FCSKID"],
-                            FCUMSTD=unitObj[0]["FCSKID"],
-                            FDDATE=obj.pds_date,
-                            FNQTY=i.request_qty,
-                            FMREMARK=i.remark,
-                            FNBACKQTY=i.request_qty,
-                            FNPRICE=ordProd[0]['FNPRICE'],
-                            FNPRICEKE=ordProd[0]['FNPRICE'],
-                            FCSHOWCOMP="",
-                        )
-                        pass
-                    
-                    ordI.save()
-                    # Update Status Order Details
-                    i.ref_formula_id = ordI.FCSKID
-                    i.request_status = "1"
-                    
-                except Exception as e:
-                    messages.error(request, str(e))
-                    ordH.delete()
-                    return
-                # Summary Seq/Qty
-                seq += 1
-                qty += i.request_qty
-                i.save()
-            
-            obj.pds_no = ordH.FCREFNO
-            obj.pds_status = "1"    
-            obj.pds_qty = qty
-            obj.pds_item = (seq - 1)
-            response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
-            print(response.text)
-            obj.save()
+                        ordProd = PROD.objects.filter(FCCODE=i.product_id.code,FCTYPE=i.product_id.prod_type_id.code).values()
+                        unitObj = UM.objects.filter(FCCODE=i.product_id.unit_id.code).values()
+                        ordI = None
+                        try:
+                            ordI = OrderI.objects.get(FCSKID=i.ref_formula_id)
+                            ordI.FCCOOR=supplier[0]['FCSKID']
+                            ordI.FCDEPT=dept[0]['FCSKID']
+                            ordI.FCORDERH=ordH.FCSKID
+                            ordI.FCPROD=ordProd[0]["FCSKID"]
+                            ordI.FCPRODTYPE=ordProd[0]["FCTYPE"]
+                            ordI.FCREFTYPE="PR"
+                            ordI.FCSECT=sect[0]['FCSKID']
+                            ordI.FCSEQ=f"{seq:03d}"
+                            ordI.FCSTUM=unitObj[0]["FCSKID"]
+                            ordI.FCUM=unitObj[0]["FCSKID"]
+                            ordI.FCUMSTD=unitObj[0]["FCSKID"]
+                            ordI.FDDATE=obj.pds_date
+                            ordI.FNQTY=i.request_qty
+                            ordI.FMREMARK=i.remark
+                            #### Update Nagative to Positive
+                            olderQty = int(ordI.FNBACKQTY)
+                            ordI.FNBACKQTY=abs(int(i.request_qty)-olderQty)
+                            ######
+                            ordI.FNPRICE=ordProd[0]['FNPRICE']
+                            ordI.FNPRICEKE=ordProd[0]['FNPRICE']
+                            ordI.FCSHOWCOMP=""
+                                
+                        except OrderI.DoesNotExist as e:
+                            ordI = OrderI(
+                                FCSKID=nanoid.generate(size=8),
+                                FCCOOR=supplier[0]['FCSKID'],
+                                FCDEPT=dept[0]['FCSKID'],
+                                FCORDERH=ordH.FCSKID,
+                                FCPROD=ordProd[0]["FCSKID"],
+                                FCPRODTYPE=ordProd[0]["FCTYPE"],
+                                FCREFTYPE="PR",
+                                FCSECT=sect[0]['FCSKID'],
+                                FCSEQ=f"{seq:03d}",
+                                FCSTUM=unitObj[0]["FCSKID"],
+                                FCUM=unitObj[0]["FCSKID"],
+                                FCUMSTD=unitObj[0]["FCSKID"],
+                                FDDATE=obj.pds_date,
+                                FNQTY=i.request_qty,
+                                FMREMARK=i.remark,
+                                FNBACKQTY=i.request_qty,
+                                FNPRICE=ordProd[0]['FNPRICE'],
+                                FNPRICEKE=ordProd[0]['FNPRICE'],
+                                FCSHOWCOMP="",
+                            )
+                            pass
+                        
+                        ordI.save()
+                        # Update Status Order Details
+                        i.ref_formula_id = ordI.FCSKID
+                        i.request_status = "1"
+                        
+                    except Exception as e:
+                        messages.error(request, str(e))
+                        ordH.delete()
+                        return
+                    # Summary Seq/Qty
+                    seq += 1
+                    qty += i.request_qty
+                    i.save()
+                
+                obj.pds_no = ordH.FCREFNO
+                obj.pds_status = "1"    
+                obj.pds_qty = qty
+                obj.pds_item = (seq - 1)
+                response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
+                print(response.text)
+                obj.save()
+        except Exception as ex:
+            messages.error(request, str(ex))
             
         return super().response_change(request, obj)
         

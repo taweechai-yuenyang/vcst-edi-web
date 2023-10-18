@@ -89,11 +89,11 @@ class ProductGroupAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         'prod_type_id',
+        'prod_group_id',
         'code',
         'no',
         'name',
         'price',
-        'description',
         'is_active',
         'updated_at',
     )

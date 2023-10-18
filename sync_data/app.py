@@ -691,52 +691,53 @@ def sync_product():
         obj = response.json()
         token = obj['access']
         conn = pymssql.connect(host=dbHost, user=dbUser,password=dbPassword, charset=dbCharset, database=dbName, tds_version=r'7.0')
-        # SQL_QUERY = f"""select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCSNAME,p.FCNAME,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p inner join PDGRP g on p.FCPDGRP=g.FCSKID inner join UM u on p.FCUM=u.FCSKID where p.FCTYPE in ('1','5') order by p.FCCODE,p.FCNAME"""
-        SQL_QUERY = f"""
-          select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCSNAME,p.FCNAME,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p
-          inner join PDGRP g on p.FCPDGRP=g.FCSKID
-          inner join UM u on p.FCUM=u.FCSKID
-          where p.FCTYPE in ('1','5') and p.FCCODE in ('W9564-5208-1')
-          order by p.FCCODE,p.FCNAME"""
+        SQL_QUERY = f"""select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCSNAME,p.FCNAME,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p inner join PDGRP g on p.FCPDGRP=g.FCSKID inner join UM u on p.FCUM=u.FCSKID where p.FCTYPE in ('1','5') order by p.FCCODE,p.FCNAME"""
+        # SQL_QUERY = f"""
+        #   select p.FCSKID,p.FCTYPE,p.FCCODE,p.FCSNAME,p.FCNAME,g.FCCODE,u.FCCODE,p.FNPRICE from PROD p
+        #   inner join PDGRP g on p.FCPDGRP=g.FCSKID
+        #   inner join UM u on p.FCUM=u.FCSKID
+        #   where p.FCTYPE in ('1','5') and p.FCCODE in ('W9564-5208-1')
+        #   order by p.FCCODE,p.FCNAME"""
         cursor = conn.cursor()
         cursor.execute(SQL_QUERY)
         err = []
         
         i = 1
         for r in cursor.fetchall():
+            is_active = 1
             FCTYPE = str(f"{r[1]}").strip()
             FCCODE = str(f"{r[2]}").strip()
             FCSNAME = str(f"{r[3]}").strip()
-            FCSN = str(f"{r[3]}").strip()
             FCNAME = str(f"{r[4]}").strip()
             FCPDGRP = str(f"{r[5]}").strip()
             FCUM = str(f"{r[6]}").strip()
             FNPRICE = str(f"{r[7]}").strip()
+            # if i > 22:
+            #     print("Test")
+            FCNO = FCSNAME
+            sNo = FCSNAME.find(" ")
+            if sNo >= 0:
+                FCNO = FCSNAME[:sNo]
             
-            FCNO = FCSNAME.find("-")
-            if FCNO >= 0:
-                sp1 = FCSNAME.find(" ")
-                if sp1 >= 0:
-                    FCNO = str(FCSN[:sp1]).strip()
-                    if len(FCNO) > 0:
-                        n = str(FCSN[sp1:]).strip()
-                        sEnd = n.find(FCPDGRP)
-                        FCSNAME = str(f"{r[3]}").strip()
-                        if sEnd >= 0:
-                            FCSNAME = str(n[:sEnd]).strip()
-                else:
-                    FCNO = FCSNAME
-                    fcSn = FCSN.find(FCNO)
-                    if fcSn >= 0:
-                        FCSNAME = str(FCSN[len(FCNO):]).strip()
-                
+            FCSNAME = str(FCSNAME).replace(FCNO, "")
             if len(FCSNAME) == 0:
-                FCSNAME = str(f"{r[3]}").strip()
-            
-            if len(FCNO) == 0:
+                FCSNAME = FCNAME
+                if FCSNAME.find(FCNO) >= 0 and FCSNAME != FCNO:
+                    FCSNAME = str(FCNAME).replace(FCNO, "").strip()
+                    
+            if len(FCNO) < 6:
                 FCNO = FCNAME
+            
+            ### Split Model
+            FNAME_REVERSE = FCSNAME[::-1]
+            
+            FCSNAME = str(FCSNAME).replace(FCPDGRP, "").strip()
+            # print(f"PARTNO: {FCNO} ==> {FCSNAME} ==> {FCPDGRP}")
+            if len(FCSNAME) == 0:
+                FCSNAME = "-"
+                is_active = 0
                 
-            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&no={FCNO}&name={FCSNAME}&price={FNPRICE}&description={FCNAME}&is_active=1'.encode(
+            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&no={FCNO}&name={FCSNAME}&price={FNPRICE}&description={FCNAME}&is_active={is_active}'.encode(
                 'utf8')
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -746,7 +747,7 @@ def sync_product():
                 "POST", f"{urlAPI}/api/products/product", headers=headers, data=payload)
 
             # print(response.text)
-            if response.status_code != 201:
+            if response.status_code != 201 and response.status_code != 200:
                 if response.status_code == 401:
                     response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
                     obj = response.json()
@@ -757,7 +758,7 @@ def sync_product():
                     
                 err.append(FCCODE)
                 
-            print(f"{i}.Sync PROD Status Code:{response.status_code} DataID: {FCCODE}")
+            print(f"{i}.Sync PROD Status Code:{response.status_code} DataID: {FCPDGRP}:::{FCNO}:::{FCSNAME}:::>{FCSNAME[::-1]}")
             i += 1
             
         cursor.close()
@@ -768,20 +769,20 @@ def sync_product():
 
 
 if __name__ == "__main__":
-    sync_supplier()
-    sync_factory()
-    sync_corporation()
-    sync_employee()
-    sync_product_type()
-    sync_um()
-    sync_order_type()
-    sync_product_group()
-    sync_section()
-    sync_department()
-    sync_position()
-    sync_revise_type()
-    sync_book()
-    sync_revise_book()
-    sync_line_notification()
-    # sync_book_detail()
+    # sync_supplier()
+    # sync_factory()
+    # sync_corporation()
+    # sync_employee()
+    # sync_product_type()
+    # sync_um()
+    # sync_order_type()
+    # sync_product_group()
+    # sync_section()
+    # sync_department()
+    # sync_position()
+    # sync_revise_type()
+    # sync_book()
+    # sync_revise_book()
+    # sync_line_notification()
+    # # sync_book_detail()
     sync_product()
