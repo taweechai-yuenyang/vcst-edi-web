@@ -1,7 +1,7 @@
 {% extends "base.html" %} 
-{% block title %}Reporting PDS {{obj.pds_no}}{%endblock %} 
+{% block title %}Reporting PDS {{pds.pds_no}}{%endblock %} 
 {% block content %}
-<div class="pt-4 container is-max-widescreen">
+<div class="pt-6 container is-max-widescreen">
     <article class="media">
         <figure class="media-left">
           <p class="image is-124x124">
@@ -14,7 +14,7 @@
                 <div class="level-item has-text-left">
                   <div class="container">
                     <p class="heading">Subject:<strong class="pl-2">Estimated Forecast Infomation</strong></p>
-                    <p class="heading">Supplier:<strong class="pl-2">Sup.Name</strong></p>
+                    <p class="heading">Supplier:<strong class="pl-2">{{pds.supplier_id.name}}</strong></p>
                     <p class="heading">Attn:<strong class="pl-2">-</strong></p>
                     <p class="heading">Fax No.:<strong class="pl-2">-</strong></p>
                   </div>
@@ -23,9 +23,9 @@
                   <div class="container">
                     <strong class="heading is-underlined">Factory: 1</strong>
                     <p />
-                    <p class="heading">Issue:<strong class="pl-2">October 4,2023</strong></p>
+                    <p class="heading">Issue:<strong class="pl-2">{{pds.pds_date}}</strong></p>
                     <p class="heading">Revision:<strong class="pl-2">1</strong></p>
-                    <p class="heading">Ref No.:<strong class="pl-2">XXX-XXXX</strong></p>
+                    <p class="heading">Ref No.:<strong class="pl-2">{{pds.pds_no}}</strong></p>
                   </div>
                 </div>
               </nav>
@@ -74,51 +74,23 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th class="has-text-centered">1</th>
-                    <td>RXX</td>
-                    <td>38</td>
-                    <td>23</td>
-                    <td>12</td>
-                    <td>3</td>
-                    <td>68</td>
-                    <td>36</td>
-                    <td>+32</td>
-                    <td>81</td>
-                    <td>
-                        11111
-                    </td>
-                </tr>
-                <tr>
-                    <th class="has-text-centered">2</th>
-                    <td>RXX</td>
-                    <td>38</td>
-                    <td>20</td>
-                    <td>11</td>
-                    <td>7</td>
-                    <td>65</td>
-                    <td>36</td>
-                    <td>+29</td>
-                    <td>71</td>
-                    <td>
-                        666
-                    </td>
-                </tr>
-                <tr>
-                    <th class="has-text-centered">3</th>
-                    <td>RXX</td>
-                    <td>38</td>
-                    <td>19</td>
-                    <td>13</td>
-                    <td>6</td>
-                    <td>69</td>
-                    <td>35</td>
-                    <td>+34</td>
-                    <td>70</td>
-                    <td>
-                        5555
-                    </td>
-                </tr>
+                {% if pds_list %}
+                {% for q in pds_list %}
+                    <tr>
+                        <th class="has-text-centered is-size-7">{{q.seq}}</th>
+                        <td class="is-size-7">{{q.import_model_by_user}}</td>
+                        <td class="is-size-7">{{q.product_id.no}}</td>
+                        <td class="is-size-7">{{q.product_id.code}}</td>
+                        <td class="is-size-7">{{q.product_id.name}}</td>
+                        <td class="has-text-centered is-size-7">0</td>
+                        <td class="has-text-centered is-size-7">{{q.request_qty}}</td>
+                        <td class="has-text-centered is-size-7">0</td>
+                        <td class="has-text-centered is-size-7">0</td>
+                        <td class="has-text-centered is-size-7">0</td>
+                        <td class="has-text-centered is-size-7">0</td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>

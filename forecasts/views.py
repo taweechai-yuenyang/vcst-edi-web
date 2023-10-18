@@ -1,23 +1,19 @@
 from datetime import datetime
+import io
+import os
+from pathlib import Path
+from django.conf import settings
+from django.shortcuts import redirect
 import xlwt
 from django.http import HttpResponse
 from django.template import loader
 from io import BytesIO
-from django.template.loader import get_template
-from xhtml2pdf import pisa  
+from django.template.loader import get_template, render_to_string
+import pdfkit
 from forecasts.models import OpenPDS, OpenPDSDetail, PDSErrorLogs
 
 from users.models import ManagementUser
 
-# defining the function to convert an HTML file to a PDF file
-def __html_to_pdf(template_src, context_dict={}):
-     template = get_template(template_src)
-     html  = template.render(context_dict)
-     result = BytesIO()
-     pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-     if not pdf.err:
-         return HttpResponse(result.getvalue(), content_type='application/pdf')
-     return None
 
 # Create your views here.
 def export_excel(request, id):
@@ -152,12 +148,26 @@ def download_forecast(request, id):
     return response
 
 def test_reporting(request, id):
-    # # # return HttpResponse(f"Hello world!: {id}")
-    # pds = OpenPDS.objects.get(id=id)
-    # template = loader.get_template("reports/forecast.html")
-    # context = {
-    #     "obj": pds,
-    # }
-    # return HttpResponse(template.render(context, request))
-    pdf = __html_to_pdf("reports/forecast.html")
-    return HttpResponse(pdf, content_type='application/pdf')
+    dte = datetime.now()
+    fname = f"export_forecast_{dte.strftime('%Y%m%d%H%M')}.pdf"
+    try:
+        template = get_template("reports/forecast.html")
+        pds = OpenPDS.objects.get(id=id)
+        pds_detail = OpenPDSDetail.objects.filter(pds_id=id)
+        context = {
+            'pds': pds,
+            'pds_list': pds_detail
+        }
+        
+        # return HttpResponse(template.render(context, request))
+        template = render_to_string("reports/forecast.html", context)
+        css = os.path.join(settings.BASE_DIR, 'static/css', 'bulma.min.css')
+        fname = f"export_forecast_{dte.strftime('%Y%m%d%H%M')}.pdf"
+        file_name = os.path.join(settings.BASE_DIR, 'static/exports', fname)
+        pdfkit.from_string(template, file_name, css=css)
+    except Exception as ex:
+        print(ex)
+        pass
+    # response = HttpResponse(content_type='application/pdf')
+    # response['Content-Disposition'] = f'attachment; filename="{fname}"'
+    return redirect(f"/static/exports/{fname}")

@@ -302,7 +302,7 @@ class OpenPDSAdmin(admin.ModelAdmin):
         "book_id",
         "pds_item",
         "pds_qty",
-        "pds_price",
+        "price",
         "status",
         "updated_on",
     )
@@ -338,6 +338,9 @@ class OpenPDSAdmin(admin.ModelAdmin):
     # Set Overrides Message
     def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=False):
         pass
+    
+    def price(self, obj):
+        return f'{obj.pds_price:.2f}'
     
     def pds_date_on(self, obj):
         return obj.pds_date.strftime("%d-%m-%Y")
@@ -401,7 +404,6 @@ class OpenPDSAdmin(admin.ModelAdmin):
                 ### Message Notification
                 msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj} เรียบร้อยแล้วคะ"
                 
-                print(request.user.section_id.code)
                 emp = EMPLOYEE.objects.filter(FCCODE=request.user.formula_user_id.code).values()
                 dept = DEPT.objects.filter(FCCODE=request.user.department_id.code).values()
                 sect = SECT.objects.filter(FCCODE=request.user.section_id.code).values()
