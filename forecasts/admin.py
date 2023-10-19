@@ -150,7 +150,7 @@ class FileForecastAdmin(admin.ModelAdmin):
                                     pdsHeader = OpenPDS.objects.get(edi_file_id=obj,supplier_id=supFilter,pds_on_month=int(obj.upload_on_month))
                                     
                                 except OpenPDS.DoesNotExist as ex:
-                                    rndNo = f"PDS{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
+                                    rndNo = f"FC{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
                                     rnd = f"{rndNo}{(OpenPDS.objects.filter(pds_no__gte=rndNo).count() + 1):05d}"
                                     pdsHeader = OpenPDS(
                                         edi_file_id=obj,
@@ -501,6 +501,7 @@ class OpenPDSAdmin(AdminConfirmMixin, admin.ModelAdmin):
         'supplier_id',
         'pds_status',
     ]
+    date_hierarchy = ('pds_date')
     
     list_per_page = 25
     
@@ -525,7 +526,7 @@ class OpenPDSAdmin(AdminConfirmMixin, admin.ModelAdmin):
             data = FORECAST_ORDER_STATUS[int(obj.pds_status)]
             txtClass = "text-bold"
             if int(obj.pds_status) == 0:
-                txtClass = "text-warning text-bold"
+                txtClass = "text-info text-bold"
 
             elif int(obj.pds_status) == 1:
                 txtClass = "text-success text-bold"

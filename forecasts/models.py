@@ -66,7 +66,7 @@ class OpenPDS(models.Model):
     class Meta:
         db_table = "ediOpenPDS"
         verbose_name = "Forecast"
-        verbose_name_plural = "Open PDS"
+        verbose_name_plural = "Upload Forecast"
         ordering = ('pds_status','pds_date','pds_no')
         
 class OpenPDSDetail(models.Model):
