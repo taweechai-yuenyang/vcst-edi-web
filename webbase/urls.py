@@ -33,6 +33,7 @@ admin.site.empty_value_display = "-"
 
 
 urlpatterns = [
+    path('tinymce/', include('tinymce.urls')),
     path("portal/", admin.site.urls, name="admin"),
     path("forecast/", include(forecast_urls), name="export_error_logs"),
     path("api/users/", include(user_urls)),

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_migrations_tui',
+    'tinymce',
     "djoser",
     "rest_framework",
     'rest_framework_simplejwt',
