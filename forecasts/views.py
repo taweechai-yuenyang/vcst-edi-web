@@ -1,16 +1,16 @@
 from datetime import datetime
-import io
 import os
-from pathlib import Path
 from django.conf import settings
 from django.shortcuts import redirect
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import xlwt
 from django.http import HttpResponse
-from django.template import loader
-from io import BytesIO
 from django.template.loader import get_template, render_to_string
 import pdfkit
-from forecasts.models import OpenPDS, OpenPDSDetail, PDSErrorLogs
+from forecasts.models import FileForecast, OpenPDS, OpenPDSDetail, PDSErrorLogs
+from forecasts.serializers import FileForecastSerializer
 
 from users.models import ManagementUser
 
@@ -171,3 +171,20 @@ def test_reporting(request, id):
     # response = HttpResponse(content_type='application/pdf')
     # response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return redirect(f"/static/exports/{fname}")
+
+class FileForecastListApiView(APIView):
+    # 1. List all
+    def get(self, request, *args, **kwargs):
+        '''
+        List all the todo items for given requested user
+        '''
+        # Supplier = Supplier.objects.filter(user = request.user.id)
+        id = self.request.query_params.get('id')
+        if id:
+            obj = FileForecast.objects.get(id=id)
+            serializer = FileForecastSerializer(obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        obj = FileForecast.objects.all()
+        serializer = FileForecastSerializer(obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
