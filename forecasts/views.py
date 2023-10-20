@@ -185,8 +185,10 @@ def approve_forecast(request, id):
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': f'Bearer {token}'
         }
+        
+        obj = Forecast.objects.get(id=id)
         ### Message Notification
-        msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {id} เรียบร้อยแล้วคะ"
+        msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {obj.forecast_no} เรียบร้อยแล้วคะ"
         messages.success(request, msg)
         
     except Exception as ex:
