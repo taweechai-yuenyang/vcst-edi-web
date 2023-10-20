@@ -4,7 +4,7 @@ from django.db import models
 from books.models import Book
 from products.models import Product, ProductGroup
 
-from users.models import ManagementUser, Section, Supplier
+from users.models import ManagementUser, PlanningForecast, Section, Supplier
 
 # Create your models here.
 FORECAST_ORDER_STATUS = [
@@ -46,19 +46,20 @@ class FileForecast(models.Model):
 class Forecast(models.Model):
     # REQUEST ORDER
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    forecast_plan_id = models.ForeignKey(PlanningForecast, blank=True, null=True, on_delete=models.SET_NULL)
     edi_file_id = models.ForeignKey(FileForecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
     supplier_id = models.ForeignKey(Supplier, verbose_name="Supplier ID", on_delete=models.SET_NULL, null=True, blank=True)
     section_id = models.ForeignKey(Section, verbose_name="Section ID", blank=True,null=True, on_delete=models.SET_NULL)
     book_id = models.ForeignKey(Book, verbose_name="Book ID", blank=True,null=True, on_delete=models.SET_NULL)
-    pds_no = models.CharField(max_length=50,verbose_name="Request No.", blank=True, null=True)
-    pds_date = models.DateField(verbose_name="Request Date",  null=True, blank=True)
-    pds_on_month = models.IntegerField(verbose_name="Request On Month",  null=True, blank=True, default="0")
-    pds_item = models.IntegerField(verbose_name="Item", blank=True,null=True, default="0")
-    pds_qty = models.FloatField(verbose_name="Qty.", blank=True,null=True, default="0")
-    pds_price = models.FloatField(verbose_name="Price.", blank=True,null=True, default="0")
+    forecast_no = models.CharField(max_length=50,verbose_name="Request No.", blank=True, null=True)
+    forecast_date = models.DateField(verbose_name="Request Date",  null=True, blank=True)
+    forecast_on_month = models.IntegerField(verbose_name="Request On Month",  null=True, blank=True, default="0")
+    forecast_item = models.IntegerField(verbose_name="Item", blank=True,null=True, default="0")
+    forecast_qty = models.FloatField(verbose_name="Qty.", blank=True,null=True, default="0")
+    forecast_price = models.FloatField(verbose_name="Price.", blank=True,null=True, default="0")
     remark = models.TextField(verbose_name="Remark", blank=True, null=True)
-    pds_by_id = models.ForeignKey(ManagementUser, verbose_name="Request By ID", blank=True, null=True, on_delete=models.SET_NULL)
-    pds_status = models.CharField(max_length=1, choices=FORECAST_ORDER_STATUS,verbose_name="Request Status", default="0")
+    forecast_by_id = models.ForeignKey(ManagementUser, verbose_name="Request By ID", blank=True, null=True, on_delete=models.SET_NULL)
+    forecast_status = models.CharField(max_length=1, choices=FORECAST_ORDER_STATUS,verbose_name="Request Status", default="0")
     supplier_download_count = models.IntegerField(verbose_name="Supplier Download Count", default="0", null=True, blank=True)
     ref_formula_id = models.CharField(max_length=8, verbose_name="Ref. Formula ID", blank=True, null=True)
     is_po = models.BooleanField(verbose_name="Is PO", default=False, blank=True, null=True)
@@ -67,13 +68,13 @@ class Forecast(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return self.pds_no
+        return self.forecast_no
     
     class Meta:
         db_table = "ediForecast"
         verbose_name = "Forecast"
         verbose_name_plural = "Upload Forecast"
-        ordering = ('pds_status','pds_date','pds_no')
+        ordering = ('forecast_status','forecast_date','forecast_no')
         permissions = [
             (
                 "approve_reject",
@@ -83,7 +84,7 @@ class Forecast(models.Model):
         
 class ForecastDetail(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
-    pds_id = models.ForeignKey(Forecast, verbose_name="Open PDS ID", blank=False, null=False, on_delete=models.CASCADE)
+    forecast_id = models.ForeignKey(Forecast, verbose_name="Open PDS ID", blank=False, null=False, on_delete=models.CASCADE)
     product_id = models.ForeignKey(Product, verbose_name="Product ID", blank=False, null=False, on_delete=models.CASCADE)
     seq = models.IntegerField(verbose_name="Sequence", blank=True, null=True,default="0")
     request_qty = models.FloatField(verbose_name="Request Qty.", default="0.0")
@@ -111,6 +112,10 @@ class ForecastDetail(models.Model):
             (
                 "edit_qty_price",
                 "แก้ไขจำนวนและราคา"
+            ),
+            (
+                "select_item",
+                "เลือกรายการสินค้า"
             )
         ]
         
@@ -143,3 +148,57 @@ class ForecastErrorLogs(models.Model):
         verbose_name = "PDS Error Logging"
         verbose_name_plural = "PDS Error Logging"
         ordering = ('row_num','item','created_at','updated_at')
+        
+class PDSHeader(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    forecast_id = models.ForeignKey(Forecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
+    item = models.IntegerField(verbose_name="Item")
+    qty = models.FloatField(verbose_name="Qty")
+    summary_price = models.FloatField(verbose_name="Summary Price", blank=True, null=True, default="0")
+    pds_no = models.CharField(max_length=50,verbose_name="PDS No.", blank=True, null=True)
+    remark = models.TextField(verbose_name="Remark", blank=True, null=True)
+    ref_formula_id = models.CharField(max_length=8, blank=True, null=True, verbose_name="Formula ID")
+    is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = "ediPDS"
+        verbose_name = "OpenPDS"
+        verbose_name_plural = "Open PDS"
+        # ordering = ('row_num','item','created_at','updated_at')
+        permissions = [
+            (
+                "create_purchase_order",
+                "เปิด PO"
+            )
+        ]
+        
+class PDSDetail(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    pds_header_id = models.ForeignKey(PDSHeader, verbose_name="PDS ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
+    forecast_detail_id = models.ForeignKey(ForecastDetail, verbose_name="PDS Detail", on_delete=models.CASCADE)
+    seq = models.IntegerField(verbose_name="Seq.")
+    qty = models.FloatField(verbose_name="Qty")
+    price = models.FloatField(verbose_name="Price", blank=True, null=True, default="0")
+    remark = models.TextField(verbose_name="Remark", blank=True, null=True)
+    ref_formula_id = models.CharField(max_length=8, blank=True, null=True, verbose_name="Formula ID")
+    is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = "ediPDSDetail"
+        verbose_name = "PDSDetail"
+        verbose_name_plural = "PDS Detail"
+        # ordering = ('row_num','item','created_at','updated_at')
+        permissions = [
+            (
+                "create_purchase_order",
+                "เปิด PO"
+            ),
+            (
+                "edit_purchase_qty_price",
+                "แก้ไขจำนวน/ราคา"
+            )
+        ]

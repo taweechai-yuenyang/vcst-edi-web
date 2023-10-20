@@ -1,6 +1,8 @@
+from datetime import datetime
 import pymssql
 import requests
 import os
+import calendar
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -712,6 +714,7 @@ def sync_product():
             FCPDGRP = str(f"{r[5]}").strip()
             FCUM = str(f"{r[6]}").strip()
             FNPRICE = str(f"{r[7]}").strip()
+            FNSTDPACK = "0"
             # if i > 22:
             #     print("Test")
             FCNO = FCSNAME
@@ -737,7 +740,7 @@ def sync_product():
                 FCSNAME = "-"
                 is_active = 0
                 
-            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&no={FCNO}&name={FCSNAME}&price={FNPRICE}&description={FCNAME}&is_active={is_active}'.encode(
+            payload = f'prod_type_id={FCTYPE}&prod_group_id={FCPDGRP}&unit_id={FCUM}&code={FCCODE}&no={FCNO}&name={FCSNAME}&price={FNPRICE}&std_pack={FNSTDPACK}&description={FCNAME}&is_active={is_active}'.encode(
                 'utf8')
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -766,6 +769,28 @@ def sync_product():
         print(f"============== Product =============")
         print(err)
         print(f"====================================")
+        
+def sync_planning_forecast():
+    response = requests.request("POST", f"{urlAPI}/api/token/", headers=objHeader, data=userLogIn)
+    if response.status_code == 200:
+        dte = datetime.now()
+        obj = response.json()
+        token = obj['access']
+        # months = list(calendar.month_name)
+        # print(months)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded','Authorization': f'Bearer {token}'}
+        i = 0
+        yy = int(str(dte.strftime("%Y")))
+        for n in range(0, 100):### Loop Year
+            y = yy + n
+            for m in range(1, 13):### Loop Month
+                payload = f"plan_day=1&plan_month={str(m)}&plan_year={y}&plan_qty=0&revise_plan_qty=0&is_active=1"
+                response = requests.request(
+                "POST", f"{urlAPI}/api/users/planning_forecast", headers=headers, data=payload)
+                # print(response.text)
+                print(f"{i}.Sync Planning Status Code:{response.status_code}")
+                i += 1
+    print(f"============== Planning Forecast =============")
 
 
 if __name__ == "__main__":
@@ -786,3 +811,4 @@ if __name__ == "__main__":
     sync_line_notification()
     # sync_book_detail()
     sync_product()
+    sync_planning_forecast()

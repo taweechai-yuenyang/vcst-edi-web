@@ -5,7 +5,7 @@
 {% endblock %} {% endcomment %}
 {% block submit_buttons_bottom %} 
 
-{% if perms.forecasts.change_Forecast and pds_status == 0 %}
+{% if perms.forecasts.approve_reject and forecast_status == 0 %}
 <div class="">
     <div class="form-group">
         <input type="submit" class="btn btn-info btn-sm form-control" value="Approve Forecast" name="_approve_forecast" />

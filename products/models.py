@@ -66,6 +66,7 @@ class Product(models.Model):
     code = models.CharField(max_length=150, verbose_name="Code", unique=True, null=False)
     no = models.CharField(max_length=250, verbose_name="No", null=False)
     name = models.CharField(max_length=250, verbose_name="Name", null=False)
+    std_pack = models.FloatField(verbose_name="STD Pack", blank=True, null=True, default="0.0")
     price = models.FloatField(verbose_name="Price", null=True, blank=True, default="0.0")
     description = models.TextField(verbose_name="Description",blank=True, null=True)
     img = models.ImageField(verbose_name="Image")

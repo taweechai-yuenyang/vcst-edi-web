@@ -2,6 +2,21 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
+ON_MONTH_LIST = [
+    ('1', 'January'), 
+    ('2', 'February'), 
+    ('3', 'March'), 
+    ('4', 'April'), 
+    ('5', 'May'), 
+    ('6', 'June'), 
+    ('7', 'July'), 
+    ('8', 'August'), 
+    ('9', 'September'),
+    ('10', 'October'),
+    ('11', 'November'),
+    ('12', 'December'),]
+
 # Create your models here.
 class Corporation(models.Model):
     # select p.FCCODE,p.FCNAME,p.FCNAME2 from PRODTYPE p
@@ -172,3 +187,22 @@ class ManagementUser(AbstractUser):
         db_table = "ediUser"
         verbose_name = "User"
         verbose_name_plural = "User"
+        
+class PlanningForecast(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    plan_day = models.IntegerField(blank=True, null=True, verbose_name="Day", default="1")
+    plan_month = models.CharField(max_length=2,choices=ON_MONTH_LIST, blank=True, null=True, verbose_name="On Month")
+    plan_year = models.IntegerField(blank=True, null=True, verbose_name="On Year")
+    plan_qty = models.FloatField(verbose_name="Planning Qty",blank=True, null=True, default="0")
+    revise_plan_qty = models.FloatField(verbose_name="Revise Qty",blank=True, null=True, default="0")
+    is_active = models.BooleanField(verbose_name="Is Active", default=False,blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{ON_MONTH_LIST[int(self.plan_month)][1]} {self.plan_year}"
+    
+    class Meta:
+        db_table = "tbmPlanningForecast"
+        verbose_name = "PlanningForecast"
+        verbose_name_plural = "Planning Forecast"

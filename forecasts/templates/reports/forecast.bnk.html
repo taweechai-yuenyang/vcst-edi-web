@@ -16,10 +16,10 @@
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-        {% if pds_list %}
+        {% if forecast_list %}
             <ul>
-            {% for q in pds_list %}
-                <li><a href="/polls/{{ q.id }}/">{{ q.pds_no }}</a></li>
+            {% for q in forecast_list %}
+                <li><a href="/polls/{{ q.id }}/">{{ q.forecast_no }}</a></li>
             {% endfor %}
             </ul>
         {% else %}

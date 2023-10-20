@@ -7,6 +7,6 @@
         <a href="/portal/forecasts/fileforecast/add/" class="btn float-right btn-info"><i class="fas fa-upload"></i>&nbsp;Upload Forecast</a>
     </div>
     {% endif %}
-    {% comment %} {{ lame_static_text }}
-    <a href="http://example.com/abc/{{ object_id }}"/>{{perms.forecasts}}</a> {% endcomment %}
+    {{ lame_static_text }}
+    <span>{{perms.forecasts}}</span>
 {% endblock %}

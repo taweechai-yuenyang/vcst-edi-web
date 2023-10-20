@@ -19,4 +19,4 @@ class UnitSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('id','prod_type_id','prod_group_id','unit_id','code','no','name','description','is_active','created_on','updated_on',)
+        fields = ('id','prod_type_id','prod_group_id','unit_id','code','no','name','std_pack','price','description','is_active','created_on','updated_on',)

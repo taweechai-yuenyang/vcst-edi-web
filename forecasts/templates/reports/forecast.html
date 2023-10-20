@@ -1,5 +1,5 @@
 {% extends "base.html" %} 
-{% block title %}Reporting PDS {{pds.pds_no}}{%endblock %} 
+{% block title %}Reporting PDS {{pds.forecast_no}}{%endblock %} 
 {% block content %}
 <div class="pt-6 container is-max-widescreen">
     <article class="media">
@@ -23,9 +23,9 @@
                   <div class="container">
                     <strong class="heading is-underlined">Factory: 1</strong>
                     <p />
-                    <p class="heading">Issue:<strong class="pl-2">{{pds.pds_date}}</strong></p>
+                    <p class="heading">Issue:<strong class="pl-2">{{pds.forecast_date}}</strong></p>
                     <p class="heading">Revision:<strong class="pl-2">1</strong></p>
-                    <p class="heading">Ref No.:<strong class="pl-2">{{pds.pds_no}}</strong></p>
+                    <p class="heading">Ref No.:<strong class="pl-2">{{pds.forecast_no}}</strong></p>
                   </div>
                 </div>
               </nav>
@@ -74,8 +74,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% if pds_list %}
-                {% for q in pds_list %}
+                {% if forecast_list %}
+                {% for q in forecast_list %}
                     <tr>
                         <th class="has-text-centered is-size-7">{{q.seq}}</th>
                         <td class="is-size-7">{{q.import_model_by_user}}</td>

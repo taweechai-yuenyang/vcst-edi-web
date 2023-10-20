@@ -13,4 +13,5 @@ urlpatterns = [
     path("corporation", views.CorporationListApiView.as_view()),
     path("position", views.PositionListApiView.as_view()),
     path("line_notifications", views.LineNotificationListApiView.as_view()),
+    path("planning_forecast", views.PlanningForecastListApiView.as_view()),
 ]

@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
-from .models import Corporation,Factory, LineNotification,Section,Position,Department,Employee,ManagementUser,Supplier
+
+from .models import Corporation,Factory, LineNotification,Section,Position,Department,Employee,ManagementUser,Supplier, PlanningForecast
 
 # Register your models here.
 class CorporationAdmin(admin.ModelAdmin):
@@ -294,6 +295,9 @@ class SupplierAdmin(admin.ModelAdmin):
 class LineNotificationAdmin(admin.ModelAdmin):
     pass
 
+class PlanningForecastAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Corporation, CorporationAdmin,)
 admin.site.register(Factory, FactoryAdmin,)
 admin.site.register(Section, SectionAdmin,)
@@ -303,3 +307,4 @@ admin.site.register(Employee, EmployeeAdmin,)
 admin.site.register(ManagementUser, ManagementUserAdmin,)
 admin.site.register(Supplier, SupplierAdmin,)
 admin.site.register(LineNotification, LineNotificationAdmin)
+admin.site.register(PlanningForecast, PlanningForecastAdmin)

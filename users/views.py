@@ -1,8 +1,8 @@
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Corporation, Department, Employee, Factory, LineNotification, Position,Section, Supplier
-from .serializers import CorporationSerializer, DepartmentSerializer, EmployeeSerializer, FactorySerializer, LineNotificationSerializer, PositionSerializer, SectionSerializer, SupplierSerializer
+from .models import Corporation, Department, Employee, Factory, LineNotification, PlanningForecast, Position,Section, Supplier
+from .serializers import CorporationSerializer, DepartmentSerializer, EmployeeSerializer, FactorySerializer, LineNotificationSerializer, PlanningForecastSerializer, PositionSerializer, SectionSerializer, SupplierSerializer
 
 
 class SupplierListApiView(APIView):
@@ -299,6 +299,35 @@ class LineNotificationListApiView(APIView):
         '''
         obj = request.POST.copy()
         serializer = LineNotificationSerializer(data=obj)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class PlanningForecastListApiView(APIView):
+    def get(self, request, *args, **kwargs):
+        '''
+        List all the todo items for given requested user
+        '''
+        # Supplier = Supplier.objects.filter(user = request.user.id)
+        id = self.request.query_params.get('id')
+        if id:
+            obj = PlanningForecast.objects.get(id=id)
+            serializer = PlanningForecastSerializer(obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        obj = PlanningForecast.objects.all()
+        serializer = PlanningForecastSerializer(obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # 2. Create
+    def post(self, request, *args, **kwargs):
+        '''
+        Create the Todo with given todo data
+        '''
+        serializer = PlanningForecastSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

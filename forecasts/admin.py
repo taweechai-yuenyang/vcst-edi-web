@@ -1,5 +1,7 @@
+import calendar
 import os
 from django.contrib import admin, messages
+from django.contrib.auth.models import Group, Permission
 from django.forms import BaseInlineFormSet
 from django.shortcuts import redirect
 from django.utils.html import format_html
@@ -12,8 +14,8 @@ import requests
 from books.models import ReviseBook
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 from products.models import Product, ProductGroup
-from users.models import ManagementUser, Supplier
-from .models import FORECAST_ORDER_STATUS, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
+from users.models import ManagementUser, PlanningForecast, Supplier
+from .models import FORECAST_ORDER_STATUS, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs, PDSHeader
 
 # Register your models here.
 
@@ -22,7 +24,7 @@ class FileForecastAdmin(admin.ModelAdmin):
         'edi_file'
     ]
     def response_add(self, request, obj, post_url_continue=None):
-        return redirect('/portal/forecasts/Forecast/')
+        return redirect('/portal/forecasts/forecast/')
     
     def save_model(self, request, obj, form, change):
         try:
@@ -52,16 +54,27 @@ class FileForecastAdmin(admin.ModelAdmin):
             ### Set Upload on Month with Year Number
             obj.upload_on_month = int(str(obj.upload_date.strftime('%Y%m')))
             obj.is_active = True
-            obj.save()
+            obj.save() ### Debug
             
+            planForecast = None
             try:
                 supNotFound = []
                 partNotFound = []
                 listHeader = []
                 data = pd.read_excel(request.FILES['edi_file'], sheet_name=0)
-                dumpDate = data.columns[0]
-                print(dumpDate[len('Forecast '):len('Forecast ') + 3])
                 
+                ### Query Planning Forecast
+                dumpDate = data.columns[0]
+                month = str(dumpDate[len('Forecast '):len('Forecast ') + 3])
+                mm = list(calendar.month_abbr)
+                x = 0
+                for m in mm:
+                    x += 1
+                    if month == m:
+                        break
+                
+                planForecast = PlanningForecast.objects.get(plan_day=1, plan_month=str(x), plan_year=obj.upload_date.strftime('%Y'))
+                #### End
                 ### - To Nan
                 data.replace('-', np.nan, inplace=True)
                 
@@ -147,21 +160,22 @@ class FileForecastAdmin(admin.ModelAdmin):
                                 ### Create PDS Header
                                 pdsHeader = None
                                 try:
-                                    pdsHeader = Forecast.objects.get(edi_file_id=obj,supplier_id=supFilter,pds_on_month=int(obj.upload_on_month))
+                                    pdsHeader = Forecast.objects.get(edi_file_id=obj,supplier_id=supFilter,forecast_plan_id=planForecast)
                                     
                                 except Forecast.DoesNotExist as ex:
                                     rndNo = f"FC{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
-                                    rnd = f"{rndNo}{(Forecast.objects.filter(pds_no__gte=rndNo).count() + 1):05d}"
+                                    rnd = f"{rndNo}{(Forecast.objects.filter(forecast_no__gte=rndNo).count() + 1):05d}"
                                     pdsHeader = Forecast(
+                                        forecast_plan_id=planForecast,
                                         edi_file_id=obj,
                                         supplier_id=supFilter,
                                         section_id=request.user.section_id,
                                         book_id=obj.book_id,
-                                        pds_no=rnd,
-                                        pds_date=obj.upload_date,
-                                        pds_on_month=obj.upload_on_month,
-                                        pds_by_id=request.user,
-                                        pds_status="0",
+                                        forecast_no=rnd,
+                                        forecast_date=obj.upload_date,
+                                        forecast_on_month=obj.upload_on_month,
+                                        forecast_by_id=request.user,
+                                        forecast_status="0",
                                     )
                                     pass
                                 
@@ -173,10 +187,10 @@ class FileForecastAdmin(admin.ModelAdmin):
                                 ### Create PDS Detail
                                 pdsDetail = None
                                 try:
-                                    pdsDetail = ForecastDetail.objects.get(pds_id=pdsHeader,product_id=partNoFilter)
+                                    pdsDetail = ForecastDetail.objects.get(forecast_id=pdsHeader,product_id=partNoFilter)
                                 except ForecastDetail.DoesNotExist as ex:
                                     pdsDetail = ForecastDetail(
-                                        pds_id=pdsHeader,
+                                        forecast_id=pdsHeader,
                                         product_id=partNoFilter,
                                         request_qty=rev0,
                                         balance_qty=rev0,
@@ -213,7 +227,7 @@ class FileForecastAdmin(admin.ModelAdmin):
                 ### Update Header
                 for h in listHeader:
                     pdsHeader = Forecast.objects.get(id=h)
-                    items = ForecastDetail.objects.filter(pds_id=h)
+                    items = ForecastDetail.objects.filter(forecast_id=h)
                     rNum = 0
                     rQty = 0
                     rPrice = 0
@@ -224,9 +238,9 @@ class FileForecastAdmin(admin.ModelAdmin):
                         r.seq = rNum
                         r.save()
                         
-                    pdsHeader.pds_item = rNum
-                    pdsHeader.pds_qty = rQty
-                    pdsHeader.pds_price = rPrice
+                    pdsHeader.forecast_item = rNum
+                    pdsHeader.forecast_qty = rQty
+                    pdsHeader.forecast_price = rPrice
                     pdsHeader.save()
                     
                 if (len(supNotFound) > 0 or len(partNotFound) > 0):
@@ -293,13 +307,15 @@ class ProductPDSDetailInline(admin.TabularInline):
 class ForecastDetailAdmin(admin.ModelAdmin):
     pass   
 
-@admin.action(description="Mark selected to Reject", permissions=["change"])
+# @admin.action(description="Mark selected to Reject", permissions=["change"])
+@admin.action(description="Mark selected to Reject")
 def make_reject_forecast(modeladmin, request, queryset):
     # confirm_change = True
-    # confirmation_fields = ['pds_status',]
-    queryset.update(pds_status="3")
+    # confirmation_fields = ['forecast_status',]
+    queryset.update(forecast_status="3")
 
-@admin.action(description="Mark selected to Approve", permissions=["change"])
+# @admin.action(description="Mark selected to Approve", permissions=["change"])
+@admin.action(description="Mark selected to Approve")
 def make_approve_forecast(modeladmin, request, queryset):
     ### Line Notification
     token = request.user.line_notification_id.token
@@ -317,7 +333,7 @@ def make_approve_forecast(modeladmin, request, queryset):
     data = queryset
     isValid = False
     for i in data:
-        if int(i.pds_status) > 0:
+        if int(i.forecast_status) > 0:
             isValid = True
             break
         
@@ -337,7 +353,7 @@ def make_approve_forecast(modeladmin, request, queryset):
         if obj.ref_formula_id is None:
             ### Create PR to Formula
             # #### Create Formula OrderH
-            fccode = obj.pds_date.strftime("%Y%m%d")[3:6]
+            fccode = obj.forecast_date.strftime("%Y%m%d")[3:6]
             ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
             fccodeNo = f"{fccode}{ordRnd:04d}"
             prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
@@ -353,9 +369,9 @@ def make_approve_forecast(modeladmin, request, queryset):
                 FCCODE=fccodeNo,
                 FCREFNO=prNo,
                 FCCOOR=supplier[0]['FCSKID'],
-                FDDATE=obj.pds_date,
-                FDDUEDATE=obj.pds_date,
-                FNAMT=obj.pds_qty,
+                FDDATE=obj.forecast_date,
+                FDDUEDATE=obj.forecast_date,
+                FNAMT=obj.forecast_qty,
             )
             ordH.save()
             obj.ref_formula_id = ordH.FCSKID
@@ -369,16 +385,16 @@ def make_approve_forecast(modeladmin, request, queryset):
             ordH.FCCREATEBY=emp[0]['FCSKID']
             ordH.FCAPPROVEB=emp[0]['FCSKID']
             ordH.FCCOOR=supplier[0]['FCSKID']
-            ordH.FDDATE=obj.pds_date
-            ordH.FDDUEDATE=obj.pds_date
-            ordH.FNAMT=obj.pds_qty
+            ordH.FDDATE=obj.forecast_date
+            ordH.FDDUEDATE=obj.forecast_date
+            ordH.FNAMT=obj.forecast_qty
             ordH.save()
             pass
         
         prNoList.append(ordH.FCREFNO)
         ### OrderI
         # Get Order Details
-        ordDetail = ForecastDetail.objects.filter(pds_id=obj).all()
+        ordDetail = ForecastDetail.objects.filter(forecast_id=obj).all()
         seq = 1
         qty = 0
         for i in ordDetail:
@@ -400,7 +416,7 @@ def make_approve_forecast(modeladmin, request, queryset):
                     ordI.FCSTUM=unitObj[0]["FCSKID"]
                     ordI.FCUM=unitObj[0]["FCSKID"]
                     ordI.FCUMSTD=unitObj[0]["FCSKID"]
-                    ordI.FDDATE=obj.pds_date
+                    ordI.FDDATE=obj.forecast_date
                     ordI.FNQTY=i.request_qty
                     ordI.FMREMARK=i.remark
                     #### Update Nagative to Positive
@@ -425,7 +441,7 @@ def make_approve_forecast(modeladmin, request, queryset):
                         FCSTUM=unitObj[0]["FCSKID"],
                         FCUM=unitObj[0]["FCSKID"],
                         FCUMSTD=unitObj[0]["FCSKID"],
-                        FDDATE=obj.pds_date,
+                        FDDATE=obj.forecast_date,
                         FNQTY=i.request_qty,
                         FMREMARK=i.remark,
                         FNBACKQTY=i.request_qty,
@@ -449,10 +465,10 @@ def make_approve_forecast(modeladmin, request, queryset):
             qty += i.request_qty
             i.save()
         
-        obj.pds_no = ordH.FCREFNO
-        obj.pds_status = "1"    
-        obj.pds_qty = qty
-        obj.pds_item = (seq - 1)
+        obj.forecast_no = ordH.FCREFNO
+        obj.forecast_status = "1"    
+        obj.forecast_qty = qty
+        obj.forecast_item = (seq - 1)
         obj.save()
         
     # queryset.update(status="p")
@@ -465,57 +481,67 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_form_template = "admin/change_form_view.html"
     inlines = [ProductPDSDetailInline]
     list_display = (
-        "pds_no",
-        "pds_date_on",
+        "forecast_no",
+        "forecast_date_on",
         "supplier_id",
         "book_id",
-        "pds_item",
-        "pds_qty",
+        "forecast_item",
+        "forecast_qty",
         "price",
         "status",
         "updated_on",
     )
     
     list_filter = (
-        "pds_date",
+        "forecast_date",
         "supplier_id",
-        "pds_status",
+        "forecast_status",
     )
     
     fields = [
-        'pds_no',
+        'forecast_no',
         'book_id',
-        'pds_date',
-        'pds_item',
-        'pds_qty',
+        'forecast_date',
+        'forecast_item',
+        'forecast_qty',
         'supplier_id',
-        'pds_status',
+        'forecast_status',
     ]
     
     readonly_fields = [
-        'pds_no',
+        'forecast_no',
         'book_id',
-        'pds_date',
-        'pds_item',
-        'pds_qty',
+        'forecast_date',
+        'forecast_item',
+        'forecast_qty',
         'supplier_id',
-        'pds_status',
+        'forecast_status',
     ]
-    date_hierarchy = ('pds_date')
+    date_hierarchy = ('forecast_date')
     
     list_per_page = 25
     
     actions = [make_approve_forecast, make_reject_forecast]
+    
+    def get_actions(self, request):
+        actions = super(ForecastAdmin, self).get_actions(request)
+        permissions = request.user.get_all_permissions()
+        # {'forecasts.view_pdsheader', 'forecasts.view_pdsdetail', 'forecasts.edit_qty_price', 'forecasts.view_forecast', 'forecasts.approve_reject', 'forecasts.select_item', 'forecasts.view_forecastdetail'}
+        if ('forecasts.approve_reject' in permissions) is False:
+            del actions['make_approve_forecast']
+            del actions['make_reject_forecast']
+        
+        return actions
     
     # Set Overrides Message
     def message_user(self, request, message, level=messages.INFO, extra_tags='', fail_silently=False):
         pass
     
     def price(self, obj):
-        return f'{obj.pds_price:.2f}'
+        return f'{obj.forecast_price:.2f}'
     
-    def pds_date_on(self, obj):
-        return obj.pds_date.strftime("%d-%m-%Y")
+    def forecast_date_on(self, obj):
+        return obj.forecast_date.strftime("%d-%m-%Y")
 
     def updated_on(self, obj):
         # return obj.updated_on.strftime("%d %b %Y %H:%M:%S")
@@ -523,21 +549,21 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
     
     def status(self, obj):
         try:
-            data = FORECAST_ORDER_STATUS[int(obj.pds_status)]
+            data = FORECAST_ORDER_STATUS[int(obj.forecast_status)]
             txtClass = "text-bold"
-            if int(obj.pds_status) == 0:
+            if int(obj.forecast_status) == 0:
                 txtClass = "text-info text-bold"
 
-            elif int(obj.pds_status) == 1:
+            elif int(obj.forecast_status) == 1:
                 txtClass = "text-success text-bold"
 
-            elif int(obj.pds_status) == 2:
+            elif int(obj.forecast_status) == 2:
                 txtClass = "text-info"
 
-            elif int(obj.pds_status) == 3:
+            elif int(obj.forecast_status) == 3:
                 txtClass = "text-danger"
 
-            elif int(obj.pds_status) == 4:
+            elif int(obj.forecast_status) == 4:
                 txtClass = "text-danger"
 
             return format_html(f"<span class='{txtClass}'>{data[1]}</span>")
@@ -551,8 +577,8 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
         obj = Forecast.objects.get(id=object_id)
         ### Append Variable
         extra_context['osm_data'] = obj
-        extra_context['pds_status'] = int(obj.pds_status)
-        extra_context['pds_revise'] = obj.edi_file_id.upload_seq
+        extra_context['forecast_status'] = int(obj.forecast_status)
+        extra_context['forecast_revise'] = obj.edi_file_id.upload_seq
         ### If Group is Planning check PR status
         isPo = False
         if request.user.groups.filter(name='Planning').exists():
@@ -586,7 +612,7 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
                 if obj.ref_formula_id is None:
                     ### Create PR to Formula
                     # #### Create Formula OrderH
-                    fccode = obj.pds_date.strftime("%Y%m%d")[3:6]
+                    fccode = obj.forecast_date.strftime("%Y%m%d")[3:6]
                     ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
                     fccodeNo = f"{fccode}{ordRnd:04d}"
                     prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
@@ -602,9 +628,9 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
                         FCCODE=fccodeNo,
                         FCREFNO=prNo,
                         FCCOOR=supplier[0]['FCSKID'],
-                        FDDATE=obj.pds_date,
-                        FDDUEDATE=obj.pds_date,
-                        FNAMT=obj.pds_qty,
+                        FDDATE=obj.forecast_date,
+                        FDDUEDATE=obj.forecast_date,
+                        FNAMT=obj.forecast_qty,
                     )
                     ordH.save()
                     obj.ref_formula_id = ordH.FCSKID
@@ -618,16 +644,16 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
                     ordH.FCCREATEBY=emp[0]['FCSKID']
                     ordH.FCAPPROVEB=emp[0]['FCSKID']
                     ordH.FCCOOR=supplier[0]['FCSKID']
-                    ordH.FDDATE=obj.pds_date
-                    ordH.FDDUEDATE=obj.pds_date
-                    ordH.FNAMT=obj.pds_qty
+                    ordH.FDDATE=obj.forecast_date
+                    ordH.FDDUEDATE=obj.forecast_date
+                    ordH.FNAMT=obj.forecast_qty
                     ordH.save()
                     msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {ordH.FCREFNO} เรียบร้อยแล้วคะ"
                     pass
                 
                 ### OrderI
                 # Get Order Details
-                ordDetail = ForecastDetail.objects.filter(pds_id=obj).all()
+                ordDetail = ForecastDetail.objects.filter(forecast_id=obj).all()
                 seq = 1
                 qty = 0
                 for i in ordDetail:
@@ -649,7 +675,7 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
                             ordI.FCSTUM=unitObj[0]["FCSKID"]
                             ordI.FCUM=unitObj[0]["FCSKID"]
                             ordI.FCUMSTD=unitObj[0]["FCSKID"]
-                            ordI.FDDATE=obj.pds_date
+                            ordI.FDDATE=obj.forecast_date
                             ordI.FNQTY=i.request_qty
                             ordI.FMREMARK=i.remark
                             #### Update Nagative to Positive
@@ -674,7 +700,7 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
                                 FCSTUM=unitObj[0]["FCSKID"],
                                 FCUM=unitObj[0]["FCSKID"],
                                 FCUMSTD=unitObj[0]["FCSKID"],
-                                FDDATE=obj.pds_date,
+                                FDDATE=obj.forecast_date,
                                 FNQTY=i.request_qty,
                                 FMREMARK=i.remark,
                                 FNBACKQTY=i.request_qty,
@@ -698,10 +724,10 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
                     qty += i.request_qty
                     i.save()
                 
-                obj.pds_no = ordH.FCREFNO
-                obj.pds_status = "1"    
-                obj.pds_qty = qty
-                obj.pds_item = (seq - 1)
+                obj.forecast_no = ordH.FCREFNO
+                obj.forecast_status = "1"
+                obj.forecast_qty = qty
+                obj.forecast_item = (seq - 1)
                 response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
                 print(response.text)
                 obj.save()
@@ -728,7 +754,7 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
         if request.user.groups.filter(name='Supplier').exists():
             # obj = qs.filter(supplier_id__in=sup_id)
             # return obj
-            obj = qs.filter(supplier_id__in=sup_id, pds_status="1")
+            obj = qs.filter(supplier_id__in=sup_id, forecast_status="1")
             return obj
         
         return qs
@@ -752,7 +778,7 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
         #     if request.user.groups.filter(name='Supplier').exists():
         #         # obj = qs.filter(supplier_id__in=sup_id)
         #         # return obj
-        #         obj = qs.filter(supplier_id__in=sup_id, pds_status="1")
+        #         obj = qs.filter(supplier_id__in=sup_id, forecast_status="1")
         #         return obj
 
         #     return qs
@@ -765,9 +791,13 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
 class ForecastErrorLogsAdmin(admin.ModelAdmin):
     pass
 
+class PDSHeaderAdmin(admin.ModelAdmin):
+    pass
+
 # admin.site.unregister(FileForecast)
 # admin.site.unregister(ForecastDetail)
 admin.site.register(FileForecast, FileForecastAdmin)
 admin.site.register(Forecast, ForecastAdmin)
 # admin.site.register(ForecastDetail, ForecastDetailAdmin)
 admin.site.register(ForecastErrorLogs, ForecastErrorLogsAdmin)
+admin.site.register(PDSHeader, PDSHeaderAdmin)

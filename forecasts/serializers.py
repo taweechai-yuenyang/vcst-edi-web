@@ -2,8 +2,6 @@ from rest_framework import serializers
 
 from forecasts.models import FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
 
-
-
 class FileForecastSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileForecast
@@ -30,15 +28,15 @@ class ForecastSerializer(serializers.ModelSerializer):
             "supplier_id",
             "section_id",
             "book_id",
-            "pds_no",
-            "pds_date",
-            "pds_on_month",
-            "pds_item",
-            "pds_qty",
-            "pds_price",
+            "forecast_no",
+            "forecast_date",
+            "forecast_on_month",
+            "forecast_item",
+            "forecast_qty",
+            "forecast_price",
             "remark",
-            "pds_by_id",
-            "pds_status",
+            "forecast_by_id",
+            "forecast_status",
             "supplier_download_count",
             "ref_formula_id",
             "is_po",
@@ -51,7 +49,7 @@ class ForecastDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ForecastDetail
         fields = (
-            "pds_id",
+            "forecast_id",
             "product_id",
             "seq",
             "request_qty",

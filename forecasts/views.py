@@ -68,7 +68,7 @@ def download_forecast(request, id):
     # pds = Forecast.objects.filter(id=id)
     # template = loader.get_template("reports/forecast.html")
     # context = {
-    #     "pds_list": pds,
+    #     "forecast_list": pds,
     # }
     # return HttpResponse(template.render(context, request))
     dte = datetime.now()
@@ -127,7 +127,7 @@ def download_forecast(request, id):
     ws.set_horz_split_pos(1)   
     # # Sheet body, remaining rows
     # rows =  ForecastErrorLogs.objects.filter(file_name=id).values_list("part_code","part_no","part_name","supplier","model","rev_0","rev_1","rev_2","rev_3","remark",)
-    rows = ForecastDetail.objects.filter(pds_id=id)
+    rows = ForecastDetail.objects.filter(forecast_id=id)
     i = 0
     row_num = 2
     for r in rows:
@@ -153,10 +153,10 @@ def test_reporting(request, id):
     try:
         template = get_template("reports/forecast.html")
         pds = Forecast.objects.get(id=id)
-        pds_detail = ForecastDetail.objects.filter(pds_id=id)
+        forecast_detail = ForecastDetail.objects.filter(forecast_id=id)
         context = {
             'pds': pds,
-            'pds_list': pds_detail
+            'forecast_list': forecast_detail
         }
         
         # return HttpResponse(template.render(context, request))

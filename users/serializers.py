@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Corporation,Factory, LineNotification,Section,Position,Department,Employee,ManagementUser,Supplier
+from .models import Corporation,Factory, LineNotification, PlanningForecast,Section,Position,Department,Employee,ManagementUser,Supplier
 
 
 
@@ -52,3 +52,8 @@ class ManagementUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ManagementUser
         fields = ('id','supplier_id','formula_user_id','department_id','position_id','section_id','description','avatar_url','signature_img','is_approve','is_active','created_on','updated_on',)
+        
+class PlanningForecastSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlanningForecast
+        fields = ("plan_day","plan_month","plan_year","plan_qty","revise_plan_qty","is_active",)
