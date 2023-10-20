@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 from django.conf import settings
 from django.shortcuts import redirect
+from django.contrib import admin, messages
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -172,6 +173,26 @@ def test_reporting(request, id):
     # response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return redirect(f"/static/exports/{fname}")
 
+def approve_forecast(request, id):
+    ordH = None
+    try:
+        ## Line Notification
+        token = request.user.line_notification_id.token
+        if bool(os.environ.get('DEBUG_MODE')):
+            token = os.environ.get("LINE_TOKEN")
+        
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': f'Bearer {token}'
+        }
+        ### Message Notification
+        msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {id} เรียบร้อยแล้วคะ"
+        messages.success(request, msg)
+        
+    except Exception as ex:
+        messages.error(request, str(ex))
+        pass
+    return redirect(f"/portal/forecasts/forecast/")
 class FileForecastListApiView(APIView):
     # 1. List all
     def get(self, request, *args, **kwargs):
