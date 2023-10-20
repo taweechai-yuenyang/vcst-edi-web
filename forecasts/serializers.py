@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from forecasts.models import FileForecast, OpenPDS, OpenPDSDetail, PDSErrorLogs
+from forecasts.models import FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
 
 
 
@@ -22,9 +22,9 @@ class FileForecastSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
-class OpenPDSSerializer(serializers.ModelSerializer):
+class ForecastSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OpenPDS
+        model = Forecast
         fields = (
             "edi_file_id",
             "supplier_id",
@@ -47,9 +47,9 @@ class OpenPDSSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
-class OpenPDSDetailSerializer(serializers.ModelSerializer):
+class ForecastDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OpenPDSDetail
+        model = ForecastDetail
         fields = (
             "pds_id",
             "product_id",
@@ -68,9 +68,9 @@ class OpenPDSDetailSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
-class PDSErrorLogsSerializer(serializers.ModelSerializer):
+class ForecastErrorLogsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PDSErrorLogs
+        model = ForecastErrorLogs
         fields = (
             "file_name",
             "row_num",

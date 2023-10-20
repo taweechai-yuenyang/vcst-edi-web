@@ -1,7 +1,7 @@
 import xlwt
 from django.http import HttpResponse
 from django.shortcuts import render
-from request_orders.models import RequestOrder, RequestOrderDetail
+from request_order_test.models import RequestOrder, RequestOrderDetail
 
 from users.models import ManagementUser
 

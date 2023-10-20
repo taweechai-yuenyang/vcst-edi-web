@@ -13,7 +13,7 @@ from books.models import ReviseBook
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 from products.models import Product, ProductGroup
 from users.models import ManagementUser, Supplier
-from .models import FORECAST_ORDER_STATUS, FileForecast, OpenPDS, OpenPDSDetail, PDSErrorLogs
+from .models import FORECAST_ORDER_STATUS, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
 
 # Register your models here.
 
@@ -22,7 +22,7 @@ class FileForecastAdmin(admin.ModelAdmin):
         'edi_file'
     ]
     def response_add(self, request, obj, post_url_continue=None):
-        return redirect('/portal/forecasts/openpds/')
+        return redirect('/portal/forecasts/Forecast/')
     
     def save_model(self, request, obj, form, change):
         try:
@@ -138,7 +138,7 @@ class FileForecastAdmin(admin.ModelAdmin):
                             #     pass
                             
                             
-                            #### Create PDSErrorLogs
+                            #### Create ForecastErrorLogs
                             if isCheckError:
                                 description = str(f"{msgSup} {msgProduct} บรรทัดที่ {rows}").lstrip()
                                 print(description)
@@ -147,12 +147,12 @@ class FileForecastAdmin(admin.ModelAdmin):
                                 ### Create PDS Header
                                 pdsHeader = None
                                 try:
-                                    pdsHeader = OpenPDS.objects.get(edi_file_id=obj,supplier_id=supFilter,pds_on_month=int(obj.upload_on_month))
+                                    pdsHeader = Forecast.objects.get(edi_file_id=obj,supplier_id=supFilter,pds_on_month=int(obj.upload_on_month))
                                     
-                                except OpenPDS.DoesNotExist as ex:
+                                except Forecast.DoesNotExist as ex:
                                     rndNo = f"FC{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
-                                    rnd = f"{rndNo}{(OpenPDS.objects.filter(pds_no__gte=rndNo).count() + 1):05d}"
-                                    pdsHeader = OpenPDS(
+                                    rnd = f"{rndNo}{(Forecast.objects.filter(pds_no__gte=rndNo).count() + 1):05d}"
+                                    pdsHeader = Forecast(
                                         edi_file_id=obj,
                                         supplier_id=supFilter,
                                         section_id=request.user.section_id,
@@ -173,9 +173,9 @@ class FileForecastAdmin(admin.ModelAdmin):
                                 ### Create PDS Detail
                                 pdsDetail = None
                                 try:
-                                    pdsDetail = OpenPDSDetail.objects.get(pds_id=pdsHeader,product_id=partNoFilter)
-                                except OpenPDSDetail.DoesNotExist as ex:
-                                    pdsDetail = OpenPDSDetail(
+                                    pdsDetail = ForecastDetail.objects.get(pds_id=pdsHeader,product_id=partNoFilter)
+                                except ForecastDetail.DoesNotExist as ex:
+                                    pdsDetail = ForecastDetail(
                                         pds_id=pdsHeader,
                                         product_id=partNoFilter,
                                         request_qty=rev0,
@@ -189,7 +189,7 @@ class FileForecastAdmin(admin.ModelAdmin):
                                 
                                 pdsDetail.save()
                                 
-                            logError = PDSErrorLogs(
+                            logError = ForecastErrorLogs(
                                 file_name=obj.id,
                                 row_num=rows,
                                 item=i,
@@ -212,8 +212,8 @@ class FileForecastAdmin(admin.ModelAdmin):
                     
                 ### Update Header
                 for h in listHeader:
-                    pdsHeader = OpenPDS.objects.get(id=h)
-                    items = OpenPDSDetail.objects.filter(pds_id=h)
+                    pdsHeader = Forecast.objects.get(id=h)
+                    items = ForecastDetail.objects.filter(pds_id=h)
                     rNum = 0
                     rQty = 0
                     rPrice = 0
@@ -256,7 +256,7 @@ class PDSDetailFormSet(BaseInlineFormSet):
         return qs
     
 class ProductPDSDetailInline(admin.TabularInline):
-    model = OpenPDSDetail
+    model = ForecastDetail
     readonly_fields = (
         'seq',
         'product_id',
@@ -290,7 +290,7 @@ class ProductPDSDetailInline(admin.TabularInline):
     def has_add_permission(self, request, obj):
         return False
 
-class OpenPDSDetailAdmin(admin.ModelAdmin):
+class ForecastDetailAdmin(admin.ModelAdmin):
     pass   
 
 @admin.action(description="Mark selected to Reject", permissions=["change"])
@@ -378,7 +378,7 @@ def make_approve_forecast(modeladmin, request, queryset):
         prNoList.append(ordH.FCREFNO)
         ### OrderI
         # Get Order Details
-        ordDetail = OpenPDSDetail.objects.filter(pds_id=obj).all()
+        ordDetail = ForecastDetail.objects.filter(pds_id=obj).all()
         seq = 1
         qty = 0
         for i in ordDetail:
@@ -460,7 +460,7 @@ def make_approve_forecast(modeladmin, request, queryset):
     response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
     print(response.text)
     
-class OpenPDSAdmin(AdminConfirmMixin, admin.ModelAdmin):
+class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_list_template = "admin/change_list_view.html"
     change_form_template = "admin/change_form_view.html"
     inlines = [ProductPDSDetailInline]
@@ -548,7 +548,7 @@ class OpenPDSAdmin(AdminConfirmMixin, admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         ### Get object
-        obj = OpenPDS.objects.get(id=object_id)
+        obj = Forecast.objects.get(id=object_id)
         ### Append Variable
         extra_context['osm_data'] = obj
         extra_context['pds_status'] = int(obj.pds_status)
@@ -627,7 +627,7 @@ class OpenPDSAdmin(AdminConfirmMixin, admin.ModelAdmin):
                 
                 ### OrderI
                 # Get Order Details
-                ordDetail = OpenPDSDetail.objects.filter(pds_id=obj).all()
+                ordDetail = ForecastDetail.objects.filter(pds_id=obj).all()
                 seq = 1
                 qty = 0
                 for i in ordDetail:
@@ -711,42 +711,63 @@ class OpenPDSAdmin(AdminConfirmMixin, admin.ModelAdmin):
         return super().response_change(request, obj)
         
     def get_queryset(self, request):
-        sup_id = []
         qs = super().get_queryset(request)
-        if len(request.GET) > 0:
-            qs = super().get_queryset(request)
-            if request.user.is_superuser:
-                return qs
-            
-            sup_id = []
-            # if request.user.groups.filter(name='Supplier').exists():
-            #     usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
-            #     for u in usr:
-            #         sup_id.append(u.supplier_id)
-            
-            usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
-            for u in usr:
-                sup_id.append(u.supplier_id)
-            
-            if request.user.groups.filter(name='Supplier').exists():
-                # obj = qs.filter(supplier_id__in=sup_id)
-                # return obj
-                obj = qs.filter(supplier_id__in=sup_id, pds_status="1")
-                return obj
-
+        if request.user.is_superuser:
             return qs
+        
+        sup_id = []
+        # if request.user.groups.filter(name='Supplier').exists():
+        #     usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        #     for u in usr:
+        #         sup_id.append(u.supplier_id)
+        
+        usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        for u in usr:
+            sup_id.append(u.supplier_id)
+        
+        if request.user.groups.filter(name='Supplier').exists():
+            # obj = qs.filter(supplier_id__in=sup_id)
+            # return obj
+            obj = qs.filter(supplier_id__in=sup_id, pds_status="1")
+            return obj
+        
+        return qs
+        # sup_id = []
+        # qs = super().get_queryset(request)
+        # if len(request.GET) > 0:
+        #     qs = super().get_queryset(request)
+        #     if request.user.is_superuser:
+        #         return qs
+            
+        #     sup_id = []
+        #     # if request.user.groups.filter(name='Supplier').exists():
+        #     #     usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        #     #     for u in usr:
+        #     #         sup_id.append(u.supplier_id)
+            
+        #     usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        #     for u in usr:
+        #         sup_id.append(u.supplier_id)
+            
+        #     if request.user.groups.filter(name='Supplier').exists():
+        #         # obj = qs.filter(supplier_id__in=sup_id)
+        #         # return obj
+        #         obj = qs.filter(supplier_id__in=sup_id, pds_status="1")
+        #         return obj
 
-        obj = qs.filter(supplier_id__in=sup_id)
-        return obj
+        #     return qs
+
+        # obj = qs.filter(supplier_id__in=sup_id)
+        # return obj
     
     pass
 
-class PDSErrorLogsAdmin(admin.ModelAdmin):
+class ForecastErrorLogsAdmin(admin.ModelAdmin):
     pass
 
 # admin.site.unregister(FileForecast)
-# admin.site.unregister(OpenPDSDetail)
+# admin.site.unregister(ForecastDetail)
 admin.site.register(FileForecast, FileForecastAdmin)
-admin.site.register(OpenPDS, OpenPDSAdmin)
-# admin.site.register(OpenPDSDetail, OpenPDSDetailAdmin)
-admin.site.register(PDSErrorLogs, PDSErrorLogsAdmin)
+admin.site.register(Forecast, ForecastAdmin)
+# admin.site.register(ForecastDetail, ForecastDetailAdmin)
+admin.site.register(ForecastErrorLogs, ForecastErrorLogsAdmin)

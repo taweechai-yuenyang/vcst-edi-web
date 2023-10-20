@@ -9,7 +9,7 @@ import xlwt
 from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
 import pdfkit
-from forecasts.models import FileForecast, OpenPDS, OpenPDSDetail, PDSErrorLogs
+from forecasts.models import FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
 from forecasts.serializers import FileForecastSerializer
 
 from users.models import ManagementUser
@@ -54,7 +54,7 @@ def export_excel(request, id):
     ws.set_remove_splits(True)
     ws.set_horz_split_pos(1)   
     # # Sheet body, remaining rows
-    rows =  PDSErrorLogs.objects.filter(file_name=id, is_success=False).values_list("part_code","part_no","part_name","supplier","model","rev_0","rev_1","rev_2","rev_3","remark",)
+    rows =  ForecastErrorLogs.objects.filter(file_name=id, is_success=False).values_list("part_code","part_no","part_name","supplier","model","rev_0","rev_1","rev_2","rev_3","remark",)
     for row in rows:
         row_num += 1
         for col_num in range(len(row)):
@@ -65,7 +65,7 @@ def export_excel(request, id):
 
 def download_forecast(request, id):
     # # return HttpResponse(f"Hello world!: {id}")
-    # pds = OpenPDS.objects.filter(id=id)
+    # pds = Forecast.objects.filter(id=id)
     # template = loader.get_template("reports/forecast.html")
     # context = {
     #     "pds_list": pds,
@@ -110,7 +110,7 @@ def download_forecast(request, id):
     header_style.alignment = header_alignment
     
     # Fetch Data
-    head = OpenPDS.objects.get(id=id)
+    head = Forecast.objects.get(id=id)
     # Merge cells for the header
     ws.write_merge(0, 0, 0, 4, head.supplier_id.name, style=header_style)  # Merging cells (0,0) to (0,2)
     ws.col(0).height = 5000
@@ -126,8 +126,8 @@ def download_forecast(request, id):
     ws.set_remove_splits(True)
     ws.set_horz_split_pos(1)   
     # # Sheet body, remaining rows
-    # rows =  PDSErrorLogs.objects.filter(file_name=id).values_list("part_code","part_no","part_name","supplier","model","rev_0","rev_1","rev_2","rev_3","remark",)
-    rows = OpenPDSDetail.objects.filter(pds_id=id)
+    # rows =  ForecastErrorLogs.objects.filter(file_name=id).values_list("part_code","part_no","part_name","supplier","model","rev_0","rev_1","rev_2","rev_3","remark",)
+    rows = ForecastDetail.objects.filter(pds_id=id)
     i = 0
     row_num = 2
     for r in rows:
@@ -152,8 +152,8 @@ def test_reporting(request, id):
     fname = f"export_forecast_{dte.strftime('%Y%m%d%H%M')}.pdf"
     try:
         template = get_template("reports/forecast.html")
-        pds = OpenPDS.objects.get(id=id)
-        pds_detail = OpenPDSDetail.objects.filter(pds_id=id)
+        pds = Forecast.objects.get(id=id)
+        pds_detail = ForecastDetail.objects.filter(pds_id=id)
         context = {
             'pds': pds,
             'pds_list': pds_detail

@@ -36,8 +36,14 @@ class FileForecast(models.Model):
         db_table = "ediFileUpload"
         verbose_name = "Upload"
         verbose_name_plural = "Upload Forecast"
+        permissions = [
+            (
+                "upload",
+                "อัพโหลดข้อมูล"
+            )
+        ]
         
-class OpenPDS(models.Model):
+class Forecast(models.Model):
     # REQUEST ORDER
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
     edi_file_id = models.ForeignKey(FileForecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
@@ -64,14 +70,20 @@ class OpenPDS(models.Model):
         return self.pds_no
     
     class Meta:
-        db_table = "ediOpenPDS"
+        db_table = "ediForecast"
         verbose_name = "Forecast"
         verbose_name_plural = "Upload Forecast"
         ordering = ('pds_status','pds_date','pds_no')
+        permissions = [
+            (
+                "approve_reject",
+                "Approve/Reject"
+            )
+        ]
         
-class OpenPDSDetail(models.Model):
+class ForecastDetail(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
-    pds_id = models.ForeignKey(OpenPDS, verbose_name="Open PDS ID", blank=False, null=False, on_delete=models.CASCADE)
+    pds_id = models.ForeignKey(Forecast, verbose_name="Open PDS ID", blank=False, null=False, on_delete=models.CASCADE)
     product_id = models.ForeignKey(Product, verbose_name="Product ID", blank=False, null=False, on_delete=models.CASCADE)
     seq = models.IntegerField(verbose_name="Sequence", blank=True, null=True,default="0")
     request_qty = models.FloatField(verbose_name="Request Qty.", default="0.0")
@@ -87,19 +99,22 @@ class OpenPDSDetail(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    def __unicode__(self):
-        return self.seq
-    
     def __str__(self):
         return str(self.id)
     
     class Meta:
-        db_table = "ediOpenPDSDetail"
-        verbose_name = "PDSDetail"
-        verbose_name_plural = "PDSDetail"
+        db_table = "ediForecastDetail"
+        verbose_name = "ForecastDetail"
+        verbose_name_plural = "Forecast Detail"
         ordering = ('seq','product_id','created_at','updated_at')
+        permissions = [
+            (
+                "edit_qty_price",
+                "แก้ไขจำนวนและราคา"
+            )
+        ]
         
-class PDSErrorLogs(models.Model):
+class ForecastErrorLogs(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
     file_name = models.UUIDField(max_length=36, verbose_name="File Forecast")
     row_num = models.IntegerField(verbose_name="Row")
@@ -124,7 +139,7 @@ class PDSErrorLogs(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = "ediPDSErrorLogs"
+        db_table = "ediForecastErrorLogs"
         verbose_name = "PDS Error Logging"
         verbose_name_plural = "PDS Error Logging"
         ordering = ('row_num','item','created_at','updated_at')

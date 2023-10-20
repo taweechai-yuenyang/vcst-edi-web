@@ -277,7 +277,7 @@ JAZZMIN_SETTINGS = {
     "hide_apps": [],
 
     # Hide these models when generating side menu (e.g auth.user)
-    "hide_models": ["forecasts.FileForecast","forecasts.OpenPDSDetail","forecasts.PDSErrorLogs",],
+    "hide_models": ["forecasts.FileForecast","forecasts.ForecastDetail","forecasts.ForecastErrorLogs",],
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
     "order_with_respect_to": ["auth", "supplier", "supplier.Supplier", "supplier.RefType",],
@@ -316,7 +316,7 @@ JAZZMIN_SETTINGS = {
         "users.LineNotification": "fas fa-exclamation-circle",
         "users.Employee": "fas fa-database",
         "forecasts.FileForecast": "fas fa-upload",
-        'forecasts.OpenPDS': "fas fa-tasks",
+        'forecasts.Forecast': "fas fa-tasks",
         # 'request_orders.PurchaseRequest': "fas fa-money-check",
         # 'request_orders.PurchaseOrder': "fas fa-file-invoice",
     },

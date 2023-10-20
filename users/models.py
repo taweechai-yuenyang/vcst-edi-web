@@ -148,6 +148,7 @@ class Supplier(models.Model):
         
 class ManagementUser(AbstractUser):
     formula_user_id = models.ForeignKey(Employee, verbose_name="Formula User ID", blank=True, null=True, on_delete=models.SET_NULL)
+    factory_id = models.ForeignKey(Factory, blank=True, verbose_name="Factory ID",null=True, on_delete=models.SET_NULL)
     supplier_id = models.ManyToManyField(Supplier, blank=True, verbose_name="Supplier ID",null=True, related_name='SetSupplier')
     department_id = models.ForeignKey(Department, blank=True, verbose_name="Department ID",null=True, on_delete=models.SET_NULL)
     position_id = models.ForeignKey(Position, blank=True, verbose_name="Position ID",null=True, on_delete=models.SET_NULL)
