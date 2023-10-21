@@ -3,6 +3,7 @@ import os
 from django.contrib import admin, messages
 from django.contrib.auth.models import Group, Permission
 from django.forms import BaseInlineFormSet
+from django.http.request import HttpRequest
 from django.shortcuts import redirect
 from django.utils.html import format_html
 from admin_confirm import AdminConfirmMixin
@@ -23,6 +24,11 @@ class FileForecastAdmin(admin.ModelAdmin):
     fields = [
         'edi_file'
     ]
+    
+    def has_module_permission(self, request):
+        print(f"perms")
+        print(request.user.has_perm("Upload.add_file"))
+        return request.user.has_perm("forecasts.add_file")
     
     def response_add(self, request, obj, post_url_continue=None):
         return redirect('/portal/forecasts/forecast/')

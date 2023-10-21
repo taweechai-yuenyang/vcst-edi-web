@@ -38,7 +38,7 @@ class FileForecast(models.Model):
         verbose_name_plural = "Upload Forecast"
         permissions = [
             (
-                "add_fileforecast",
+                "add_file",
                 "อัพโหลดข้อมูล"
             )
         ]
