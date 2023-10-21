@@ -152,10 +152,11 @@ class ForecastErrorLogs(models.Model):
 class PDSHeader(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
     forecast_id = models.ForeignKey(Forecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
+    pds_date = models.DateField(verbose_name="PDS Date", blank=True, null=True)
+    pds_no = models.CharField(max_length=50,verbose_name="PDS No.", blank=True, null=True)
     item = models.IntegerField(verbose_name="Item")
     qty = models.FloatField(verbose_name="Qty")
     summary_price = models.FloatField(verbose_name="Summary Price", blank=True, null=True, default="0")
-    pds_no = models.CharField(max_length=50,verbose_name="PDS No.", blank=True, null=True)
     remark = models.TextField(verbose_name="Remark", blank=True, null=True)
     ref_formula_id = models.CharField(max_length=8, blank=True, null=True, verbose_name="Formula ID")
     is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
