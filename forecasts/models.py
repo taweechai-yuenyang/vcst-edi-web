@@ -2,7 +2,7 @@ import uuid
 import django
 from django.db import models
 from books.models import Book
-from products.models import Product, ProductGroup
+from products.models import Product
 
 from users.models import ManagementUser, PlanningForecast, Section, Supplier
 
@@ -38,7 +38,7 @@ class FileForecast(models.Model):
         verbose_name_plural = "Upload Forecast"
         permissions = [
             (
-                "upload",
+                "add_fileforecast",
                 "อัพโหลดข้อมูล"
             )
         ]
@@ -51,7 +51,7 @@ class Forecast(models.Model):
     supplier_id = models.ForeignKey(Supplier, verbose_name="Supplier ID", on_delete=models.SET_NULL, null=True, blank=True)
     section_id = models.ForeignKey(Section, verbose_name="Section ID", blank=True,null=True, on_delete=models.SET_NULL)
     book_id = models.ForeignKey(Book, verbose_name="Book ID", blank=True,null=True, on_delete=models.SET_NULL)
-    forecast_no = models.CharField(max_length=50,verbose_name="Request No.", blank=True, null=True)
+    forecast_no = models.CharField(max_length=10,verbose_name="Request No.", blank=True, null=True)
     forecast_date = models.DateField(verbose_name="Request Date",  null=True, blank=True)
     forecast_on_month = models.IntegerField(verbose_name="Request On Month",  null=True, blank=True, default="0")
     forecast_item = models.IntegerField(verbose_name="Item", blank=True,null=True, default="0")
@@ -153,7 +153,7 @@ class PDSHeader(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
     forecast_id = models.ForeignKey(Forecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
     pds_date = models.DateField(verbose_name="PDS Date", blank=True, null=True)
-    pds_no = models.CharField(max_length=50,verbose_name="PDS No.", blank=True, null=True)
+    pds_no = models.CharField(max_length=10,verbose_name="PDS No.", blank=True, null=True)
     item = models.IntegerField(verbose_name="Item")
     qty = models.FloatField(verbose_name="Qty")
     summary_price = models.FloatField(verbose_name="Summary Price", blank=True, null=True, default="0")

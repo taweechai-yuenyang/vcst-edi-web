@@ -2,17 +2,17 @@ from datetime import datetime
 import os
 from django.conf import settings
 from django.shortcuts import redirect
-from django.contrib import admin, messages
+from django.contrib import messages
 import nanoid
 import requests
-from rest_framework import permissions, status
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import xlwt
 from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
 import pdfkit
-from forecasts.models import FileForecast, Forecast, ForecastDetail, ForecastErrorLogs, PDSHeader
+from forecasts.models import FileForecast, Forecast, ForecastDetail, ForecastErrorLogs, PDSDetail, PDSHeader
 from forecasts.serializers import FileForecastSerializer
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 
@@ -177,6 +177,7 @@ def test_reporting(request, id):
     return redirect(f"/static/exports/{fname}")
 
 def approve_forecast(request, id):
+    dte = datetime.now()
     ordH = None
     try:
         ## Line Notification
@@ -192,10 +193,27 @@ def approve_forecast(request, id):
         obj = Forecast.objects.get(id=id)
         ### Create PDSHeader
         pdsHead = None
+        pdsCount = PDSHeader.objects.filter(pds_date__eq=dte).count() + 1
+        pds_no = f"PDS{str(dte.strftime('%Y%m'))[3:]}{pdsCount::04d}"
         try:
-            pdsHead = PDSHeader.objects.get(forecast_id=obj.id)
+            pdsHead = PDSHeader.objects.get(forecast_id=obj)
+            pdsHead.pds_date = datetime.now()
+            pdsHead.pds_no = pds_no
+            pdsHead.item = 0
+            pdsHead.qty = 0
+            pdsHead.summary_price = 0
+            pdsHead.is_active = True
         except PDSHeader.DoesNotExist:
-            pdsHead = PDSHeader()
+            pdsHead = PDSHeader(
+                forecast_id = obj,
+                pds_date = datetime.now(),
+                pds_no = pds_no,
+                item = 0,
+                qty = 0,
+                summary_price = 0,
+                remark = "-",
+                is_active = True,
+            )
             pass
         
         pdsHead.save()
@@ -213,7 +231,7 @@ def approve_forecast(request, id):
             fccode = obj.forecast_date.strftime("%Y%m%d")[3:6]
             ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
             fccodeNo = f"{fccode}{ordRnd:04d}"
-            prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
+            prNo = f"{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
             msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {prNo} เรียบร้อยแล้วคะ"
             ordH = OrderH(
                 FCSKID=nanoid.generate(size=8),
@@ -259,6 +277,31 @@ def approve_forecast(request, id):
             try:
                 ordProd = PROD.objects.filter(FCCODE=i.product_id.code,FCTYPE=i.product_id.prod_type_id.code).values()
                 unitObj = UM.objects.filter(FCCODE=i.product_id.unit_id.code).values()
+                
+                ### Create PDS Detail
+                pdsDetail = None
+                try:
+                    pdsDetail = PDSDetail.objects.get(pds_header_id=pdsHead,forecast_detail_id=i.id)
+                    pdsDetail.seq = seq
+                    pdsDetail.qty = i.request_qty
+                    pdsDetail.price = ordProd[0]['FNPRICE']
+                    pdsDetail.remark = i.remark
+                    pdsDetail.is_active = True
+                    
+                except PDSDetail.DoesNotExist:
+                    pdsDetail = PDSDetail(
+                        pds_header_id = pdsHead,
+                        forecast_detail_id = i.id,
+                        seq = seq,
+                        qty = i.request_qty,
+                        price = ordProd[0]['FNPRICE'],
+                        remark = i.remark,
+                        is_active = True,
+                    )
+                    pass
+                pdsDetail.save()
+                ### End PDS Detail
+            
                 ordI = None
                 try:
                     ordI = OrderI.objects.get(FCSKID=i.ref_formula_id)

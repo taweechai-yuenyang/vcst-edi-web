@@ -164,7 +164,7 @@ class FileForecastAdmin(admin.ModelAdmin):
                                     pdsHeader = Forecast.objects.get(edi_file_id=obj,supplier_id=supFilter,forecast_plan_id=planForecast)
                                     
                                 except Forecast.DoesNotExist as ex:
-                                    rndNo = f"FC{str(obj.upload_date.strftime('%Y%m%d'))[3:]}"
+                                    rndNo = f"FC{str(obj.upload_date.strftime('%Y%m'))[3:]}"
                                     rnd = f"{rndNo}{(Forecast.objects.filter(forecast_no__gte=rndNo).count() + 1):05d}"
                                     pdsHeader = Forecast(
                                         forecast_plan_id=planForecast,
@@ -357,7 +357,7 @@ def make_approve_forecast(modeladmin, request, queryset):
             fccode = obj.forecast_date.strftime("%Y%m%d")[3:6]
             ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
             fccodeNo = f"{fccode}{ordRnd:04d}"
-            prNo = f"T{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
+            prNo = f"{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
             msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {prNo} เรียบร้อยแล้วคะ"
             ordH = OrderH(
                 FCSKID=nanoid.generate(size=8),
