@@ -1,8 +1,10 @@
 import calendar
 import os
+from typing import Any
 from django.contrib import admin, messages
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models.query import QuerySet
 from django.views.generic import FormView
 from django.forms import BaseInlineFormSet
 from django.http.request import HttpRequest
@@ -549,12 +551,18 @@ class PDSDetailInlineAdmin(admin.TabularInline):
 
 @admin.action(description="Mark selected to PO", permissions=['change'])
 def mark_as_po(modeladmin, request, queryset):
-    data = queryset
-    for r in data:
-        greeter.create_purchase_order(request, r.id, "PO", "002")
+    try:
+        data = queryset
+        for r in data:
+            if int(r.pds_status) == 0: 
+                greeter.create_purchase_order(request, r.id, "PO", "002")
+    except Exception as ex:
+        messages.error(request, str(ex))
+        pass
     pass
 
 class PDSHeaderAdmin(admin.ModelAdmin):
+    change_form_template = "admin/open_pds_form_view.html"
     inlines = [PDSDetailInlineAdmin]
     list_display = [
         "pds_no",
@@ -616,6 +624,28 @@ class PDSHeaderAdmin(admin.ModelAdmin):
         except:
             pass
         return format_html(f"<span class='text-bold'>-</span>")
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        ### Get object
+        obj = PDSHeader.objects.get(id=object_id)
+        ### Append Variable
+        extra_context['osm_data'] = obj
+        if obj.pds_status is None:
+            extra_context['pds_status'] = 0
+        else:
+            extra_context['pds_status'] = int(obj.pds_status)
+            
+        ### If Group is Planning check PR status
+        isPo = False
+        if request.user.groups.filter(name='Planning').exists():
+            isPo = obj.ref_formula_id != None
+    
+        extra_context['send_to_po'] = isPo
+        return super().change_view(request, object_id, form_url, extra_context=extra_context,)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request)
     
     pass
 

@@ -1,8 +1,0 @@
-{% extends "admin/change_list.html" %}
-{% block object-tools-items %}
-    {{ block.super }}
-    <div>
-        {% load static %}
-        <a target="_blank"  href="{% static 'request_orders/edi.xlsx' %}" class="btn float-right btn-info"><i class="fas fa-download"></i>&nbsp;Download EDI Template</a>
-    </div>
-{% endblock %}

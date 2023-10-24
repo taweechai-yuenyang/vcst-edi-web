@@ -182,6 +182,12 @@ def approve_forecast(request, id):
         messages.success(request, f"บันทึกข้อมูลเรียบร้อยแล้ว")
             
     return redirect(f"/portal/forecasts/forecast/")
+
+def create_po_forecast(request, id):
+    if greeter.create_purchase_order(request, id, "PO", "002"):
+        messages.success(request, f"บันทึกข้อมูลเรียบร้อยแล้ว")
+            
+    return redirect(f"/portal/forecasts/pdsheader/")
 class FileForecastListApiView(APIView):
     # 1. List all
     def get(self, request, *args, **kwargs):
