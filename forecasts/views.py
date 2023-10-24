@@ -3,6 +3,11 @@ import os
 from django.conf import settings
 from django.shortcuts import redirect
 from django.contrib import messages
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.pagesizes import A4
 import nanoid
 import requests
 from rest_framework import status
@@ -188,6 +193,14 @@ def create_po_forecast(request, id):
         messages.success(request, f"บันทึกข้อมูลเรียบร้อยแล้ว")
             
     return redirect(f"/portal/forecasts/pdsheader/")
+
+def pdf_forecast(request, id):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="pdf1.pdf"'
+    doc = greeter.fcMaker(response)
+    doc.createDocument()
+    doc.savePDF()
+    return response
 class FileForecastListApiView(APIView):
     # 1. List all
     def get(self, request, *args, **kwargs):

@@ -9,5 +9,6 @@ urlpatterns = [
     path('download/<str:id>', views.download_forecast),
     path('create_po/<str:id>', views.create_po_forecast),
     path('test/<str:id>', views.test_reporting),
+    path('pdf/<str:id>', views.pdf_forecast, name="pdf_forecast"),
     path('api/files', views.FileForecastListApiView.as_view()),
 ]
