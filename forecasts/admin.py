@@ -567,13 +567,35 @@ class PDSHeaderAdmin(admin.ModelAdmin):
     list_display = [
         "pds_no",
         "get_pds_date",
-        "get_forecast_id",
+        "get_supplier_name",
         "item",
         "qty",
         "summary_price",
         "remark",
         "status",
         "updated_at",
+    ]
+    
+    fields = [
+        "pds_no",
+        "pds_date",
+        "forecast_id",
+        "item",
+        "qty",
+        "summary_price",
+        "remark",
+    ]
+    
+    readonly_fields = [
+        "forecast_id",
+        "pds_date",
+        "pds_no",
+        "item",
+        "qty",
+        "summary_price",
+        "pds_status",
+        "ref_formula_id",
+        "is_active",
     ]
     
     actions = [mark_as_po]
@@ -599,6 +621,10 @@ class PDSHeaderAdmin(admin.ModelAdmin):
     def get_forecast_id(self, obj):
         return obj.forecast_id
     get_forecast_id.short_description = "Purchase No."
+    def get_supplier_name(self, obj):
+        return obj.forecast_id.supplier_id
+    get_supplier_name.short_description = "Supplier Name"
+    
     
     def status(self, obj):
         try:

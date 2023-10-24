@@ -166,6 +166,8 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 i.request_status = "1"
                 i.save()
             
+            # print(f"{ordH.FCREFNO}: {len(ordH.FCREFNO)}")
+            obj.pds_no = ordH.FCREFNO
             obj.ref_formula_id = ordH.FCSKID
             obj.pds_status = "1"
             obj.save()

@@ -153,7 +153,7 @@ class PDSHeader(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
     forecast_id = models.ForeignKey(Forecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
     pds_date = models.DateField(verbose_name="PDS Date", blank=True, null=True)
-    pds_no = models.CharField(max_length=10,verbose_name="PDS No.", blank=True, null=True)
+    pds_no = models.CharField(max_length=15,verbose_name="PDS No.", blank=True, null=True)
     item = models.IntegerField(verbose_name="Item")
     qty = models.FloatField(verbose_name="Qty")
     summary_price = models.FloatField(verbose_name="Summary Price", blank=True, null=True, default="0")
@@ -163,6 +163,9 @@ class PDSHeader(models.Model):
     is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return str(self.pds_no)
     
     class Meta:
         db_table = "ediPDS"
