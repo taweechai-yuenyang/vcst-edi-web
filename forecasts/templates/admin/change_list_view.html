@@ -3,7 +3,7 @@
     {% comment %} {{ block.super }} {% endcomment %}
     {% comment %} {{ lame_static_text }}
     <span>{{perms.forecasts}}</span> {% endcomment %}
-    {% if perms.forecasts.add_fileforecast %}
+    {% if perms.forecasts.add_file %}
     <div>
         {% load static %}
         <a href="/portal/forecasts/fileforecast/add/" class="btn float-right btn-info"><i class="fas fa-upload"></i>&nbsp;Upload Forecast</a>

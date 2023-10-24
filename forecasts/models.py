@@ -51,7 +51,7 @@ class Forecast(models.Model):
     supplier_id = models.ForeignKey(Supplier, verbose_name="Supplier ID", on_delete=models.SET_NULL, null=True, blank=True)
     section_id = models.ForeignKey(Section, verbose_name="Section ID", blank=True,null=True, on_delete=models.SET_NULL)
     book_id = models.ForeignKey(Book, verbose_name="Book ID", blank=True,null=True, on_delete=models.SET_NULL)
-    forecast_no = models.CharField(max_length=10,verbose_name="Request No.", blank=True, null=True)
+    forecast_no = models.CharField(max_length=15,verbose_name="Request No.", blank=True, null=True)
     forecast_date = models.DateField(verbose_name="Request Date",  null=True, blank=True)
     forecast_on_month = models.IntegerField(verbose_name="Request On Month",  null=True, blank=True, default="0")
     forecast_item = models.IntegerField(verbose_name="Item", blank=True,null=True, default="0")
@@ -101,7 +101,7 @@ class ForecastDetail(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return str(self.id)
+        return str(self.product_id.code)
     
     class Meta:
         db_table = "ediForecastDetail"
@@ -158,6 +158,7 @@ class PDSHeader(models.Model):
     qty = models.FloatField(verbose_name="Qty")
     summary_price = models.FloatField(verbose_name="Summary Price", blank=True, null=True, default="0")
     remark = models.TextField(verbose_name="Remark", blank=True, null=True)
+    pds_status = models.CharField(max_length=1, choices=FORECAST_ORDER_STATUS,verbose_name="PDS Status", blank=True, null=True, default="0")
     ref_formula_id = models.CharField(max_length=8, blank=True, null=True, verbose_name="Formula ID")
     is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -165,9 +166,9 @@ class PDSHeader(models.Model):
     
     class Meta:
         db_table = "ediPDS"
-        verbose_name = "OpenPDS"
+        verbose_name = "PDS"
         verbose_name_plural = "Open PDS"
-        # ordering = ('row_num','item','created_at','updated_at')
+        ordering = ('pds_status','pds_no','created_at','updated_at')
         permissions = [
             (
                 "create_purchase_order",
@@ -187,6 +188,9 @@ class PDSDetail(models.Model):
     is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return str(self.forecast_detail_id)
     
     class Meta:
         db_table = "ediPDSDetail"

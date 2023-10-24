@@ -2,6 +2,8 @@ import calendar
 import os
 from django.contrib import admin, messages
 from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.views.generic import FormView
 from django.forms import BaseInlineFormSet
 from django.http.request import HttpRequest
 from django.shortcuts import redirect
@@ -13,22 +15,27 @@ import pandas as pd
 import requests
 
 from books.models import ReviseBook
+from forecasts import greeter
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 from products.models import Product, ProductGroup
 from users.models import ManagementUser, PlanningForecast, Supplier
-from .models import FORECAST_ORDER_STATUS, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs, PDSHeader
-
-# Register your models here.
+from .models import FORECAST_ORDER_STATUS, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs, PDSDetail, PDSHeader
 
 class FileForecastAdmin(admin.ModelAdmin):
     fields = [
         'edi_file'
     ]
     
-    def has_module_permission(self, request):
-        print(f"perms")
-        print(request.user.has_perm("Upload.add_file"))
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        
         return request.user.has_perm("forecasts.add_file")
+    
+    # def has_module_permission(self, request):
+    #     print(f"perms")
+    #     print(request.user.has_perm("forecasts.add_file"))
+    #     return request.user.has_perm("forecasts.add_file")
     
     def response_add(self, request, obj, post_url_continue=None):
         return redirect('/portal/forecasts/forecast/')
@@ -324,18 +331,6 @@ def make_reject_forecast(modeladmin, request, queryset):
 # @admin.action(description="Mark selected to Approve", permissions=["change"])
 @admin.action(description="Mark selected to Approve")
 def make_approve_forecast(modeladmin, request, queryset):
-    ### Line Notification
-    token = request.user.line_notification_id.token
-    if bool(os.environ.get('DEBUG_MODE')):
-        token = os.environ.get("LINE_TOKEN")
-    
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': f'Bearer {token}'
-    }
-    
-    prNoList = []
-    msg = ""
     ### 
     data = queryset
     isValid = False
@@ -348,140 +343,8 @@ def make_approve_forecast(modeladmin, request, queryset):
         messages.error(request, "ไม่สามารถดำเนินการตามที่ร้องขอได้เนื่องจาก สถานะของรายการไม่ถูกต้อง รบการทบทวนรายการที่เลือกใหม่ด้วย")
         return
     
-    
-    emp = EMPLOYEE.objects.filter(FCCODE=request.user.formula_user_id.code).values()
-    dept = DEPT.objects.filter(FCCODE=request.user.department_id.code).values()
-    sect = SECT.objects.filter(FCCODE=request.user.section_id.code).values()
-    ordBook = BOOK.objects.filter(FCREFTYPE="PR", FCCODE="0002").values()
-    
     for obj in data:
-        supplier = COOR.objects.filter(FCCODE=obj.supplier_id.code).values()
-        ordH = None
-        if obj.ref_formula_id is None:
-            ### Create PR to Formula
-            # #### Create Formula OrderH
-            fccode = obj.forecast_date.strftime("%Y%m%d")[3:6]
-            ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
-            fccodeNo = f"{fccode}{ordRnd:04d}"
-            prNo = f"{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
-            msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {prNo} เรียบร้อยแล้วคะ"
-            ordH = OrderH(
-                FCSKID=nanoid.generate(size=8),
-                FCREFTYPE="PR",
-                FCDEPT=dept[0]['FCSKID'],
-                FCSECT=sect[0]['FCSKID'],
-                FCBOOK=ordBook[0]['FCSKID'],
-                FCCREATEBY=emp[0]['FCSKID'],
-                FCAPPROVEB=emp[0]['FCSKID'],
-                FCCODE=fccodeNo,
-                FCREFNO=prNo,
-                FCCOOR=supplier[0]['FCSKID'],
-                FDDATE=obj.forecast_date,
-                FDDUEDATE=obj.forecast_date,
-                FNAMT=obj.forecast_qty,
-            )
-            ordH.save()
-            obj.ref_formula_id = ordH.FCSKID
-        
-        else:
-            ordH = OrderH.objects.get(FCSKID=obj.ref_formula_id)
-            ordH.FCREFTYPE="PR"
-            ordH.FCDEPT=dept[0]['FCSKID']
-            ordH.FCSECT=sect[0]['FCSKID']
-            ordH.FCBOOK=ordBook[0]['FCSKID']
-            ordH.FCCREATEBY=emp[0]['FCSKID']
-            ordH.FCAPPROVEB=emp[0]['FCSKID']
-            ordH.FCCOOR=supplier[0]['FCSKID']
-            ordH.FDDATE=obj.forecast_date
-            ordH.FDDUEDATE=obj.forecast_date
-            ordH.FNAMT=obj.forecast_qty
-            ordH.save()
-            pass
-        
-        prNoList.append(ordH.FCREFNO)
-        ### OrderI
-        # Get Order Details
-        ordDetail = ForecastDetail.objects.filter(forecast_id=obj).all()
-        seq = 1
-        qty = 0
-        for i in ordDetail:
-            ### Create OrderI Formula
-            try:
-                ordProd = PROD.objects.filter(FCCODE=i.product_id.code,FCTYPE=i.product_id.prod_type_id.code).values()
-                unitObj = UM.objects.filter(FCCODE=i.product_id.unit_id.code).values()
-                ordI = None
-                try:
-                    ordI = OrderI.objects.get(FCSKID=i.ref_formula_id)
-                    ordI.FCCOOR=supplier[0]['FCSKID']
-                    ordI.FCDEPT=dept[0]['FCSKID']
-                    ordI.FCORDERH=ordH.FCSKID
-                    ordI.FCPROD=ordProd[0]["FCSKID"]
-                    ordI.FCPRODTYPE=ordProd[0]["FCTYPE"]
-                    ordI.FCREFTYPE="PR"
-                    ordI.FCSECT=sect[0]['FCSKID']
-                    ordI.FCSEQ=f"{seq:03d}"
-                    ordI.FCSTUM=unitObj[0]["FCSKID"]
-                    ordI.FCUM=unitObj[0]["FCSKID"]
-                    ordI.FCUMSTD=unitObj[0]["FCSKID"]
-                    ordI.FDDATE=obj.forecast_date
-                    ordI.FNQTY=i.request_qty
-                    ordI.FMREMARK=i.remark
-                    #### Update Nagative to Positive
-                    olderQty = int(ordI.FNBACKQTY)
-                    ordI.FNBACKQTY=abs(int(i.request_qty)-olderQty)
-                    ######
-                    ordI.FNPRICE=ordProd[0]['FNPRICE']
-                    ordI.FNPRICEKE=ordProd[0]['FNPRICE']
-                    ordI.FCSHOWCOMP=""
-                        
-                except OrderI.DoesNotExist as e:
-                    ordI = OrderI(
-                        FCSKID=nanoid.generate(size=8),
-                        FCCOOR=supplier[0]['FCSKID'],
-                        FCDEPT=dept[0]['FCSKID'],
-                        FCORDERH=ordH.FCSKID,
-                        FCPROD=ordProd[0]["FCSKID"],
-                        FCPRODTYPE=ordProd[0]["FCTYPE"],
-                        FCREFTYPE="PR",
-                        FCSECT=sect[0]['FCSKID'],
-                        FCSEQ=f"{seq:03d}",
-                        FCSTUM=unitObj[0]["FCSKID"],
-                        FCUM=unitObj[0]["FCSKID"],
-                        FCUMSTD=unitObj[0]["FCSKID"],
-                        FDDATE=obj.forecast_date,
-                        FNQTY=i.request_qty,
-                        FMREMARK=i.remark,
-                        FNBACKQTY=i.request_qty,
-                        FNPRICE=ordProd[0]['FNPRICE'],
-                        FNPRICEKE=ordProd[0]['FNPRICE'],
-                        FCSHOWCOMP="",
-                    )
-                    pass
-                
-                ordI.save()
-                # Update Status Order Details
-                i.ref_formula_id = ordI.FCSKID
-                i.request_status = "1"
-                
-            except Exception as e:
-                messages.error(request, str(e))
-                ordH.delete()
-                return
-            # Summary Seq/Qty
-            seq += 1
-            qty += i.request_qty
-            i.save()
-        
-        obj.forecast_no = ordH.FCREFNO
-        obj.forecast_status = "1"    
-        obj.forecast_qty = qty
-        obj.forecast_item = (seq - 1)
-        obj.save()
-        
-    # queryset.update(status="p")
-    msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร\n{','.join(prNoList)}\nเรียบร้อยแล้วคะ"
-    response = requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
-    print(response.text)
+        greeter.create_purchase_order(request, obj.id)
     
 class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_list_template = "admin/change_list_view.html"
@@ -652,7 +515,108 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
 class ForecastErrorLogsAdmin(admin.ModelAdmin):
     pass
 
+class PDSDetailInlineAdmin(admin.TabularInline):
+    model = PDSDetail
+    readonly_fields = (
+        'forecast_detail_id',
+        'seq',
+        'qty',
+        'price',
+        'is_active',
+    )
+    
+    fields = [
+        'forecast_detail_id',
+        'seq',
+        'qty',
+        'price',
+        'is_active',
+    ]
+    
+    extra = 2
+    max_num = 5
+    can_delete = False
+    can_add = False
+    show_change_link = False
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return False
+    
+    pass
+
+@admin.action(description="Mark selected to PO", permissions=['change'])
+def mark_as_po(modeladmin, request, queryset):
+    data = queryset
+    for r in data:
+        greeter.create_purchase_order(request, r.id, "PO", "002")
+    pass
+
 class PDSHeaderAdmin(admin.ModelAdmin):
+    inlines = [PDSDetailInlineAdmin]
+    list_display = [
+        "pds_no",
+        "get_pds_date",
+        "get_forecast_id",
+        "item",
+        "qty",
+        "summary_price",
+        "remark",
+        "status",
+        "updated_at",
+    ]
+    
+    actions = [mark_as_po]
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        
+        return request.user.has_perm("forecasts.create_purchase_order")
+    
+    # def get_actions(self, request):
+    #     actions = super().get_actions(request)
+    #     permissions = request.user.get_all_permissions()
+    #     # print(permissions)
+    #     if ('forecasts.create_purchase_order' in permissions) is False:
+    #         del actions['mark_as_po']
+        
+    #     return actions
+    
+    def get_pds_date(self, obj):
+        return obj.pds_date.strftime("%d-%m-%Y")
+    get_pds_date.short_description = "PDS Date"
+    
+    def get_forecast_id(self, obj):
+        return obj.forecast_id
+    get_forecast_id.short_description = "Purchase No."
+    
+    def status(self, obj):
+        try:
+            data = FORECAST_ORDER_STATUS[int(obj.pds_status)]
+            txtClass = "text-bold"
+            if int(obj.pds_status) == 0:
+                txtClass = "text-info text-bold"
+
+            elif int(obj.pds_status) == 1:
+                txtClass = "text-success text-bold"
+
+            elif int(obj.pds_status) == 2:
+                txtClass = "text-info"
+
+            elif int(obj.pds_status) == 3:
+                txtClass = "text-danger"
+
+            elif int(obj.pds_status) == 4:
+                txtClass = "text-danger"
+
+            return format_html(f"<span class='{txtClass}'>{data[1]}</span>")
+        
+        except:
+            pass
+        return format_html(f"<span class='text-bold'>-</span>")
+    
     pass
 
 # admin.site.unregister(FileForecast)
