@@ -11,4 +11,18 @@
     </a>
 </div>
 {% endif %}
+<a  type="button" target="_blank" 
+    class="btn btn-success btn-sm form-control" 
+    href="/forecast/export_pds/{{object_id}}">
+    <i class="fas fa-download"></i>
+    Download Forecast
+</a>
+<div class="pt-2">
+    <a  type="button" target="_blank" 
+        class="btn btn-info btn-sm form-control" 
+        href="/forecast/test/{{object_id}}">
+        <i class="fas fa-print"></i>
+        Report Forecast
+    </a>
+<div>
 {% endblock %}

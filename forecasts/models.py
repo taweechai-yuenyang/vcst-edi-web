@@ -78,7 +78,11 @@ class Forecast(models.Model):
         permissions = [
             (
                 "approve_reject",
-                "Approve/Reject"
+                "จัดการ Approve/Reject"
+            ),
+            (
+                "is_download_report",
+                "ดูรายงาน"
             )
         ]
         
@@ -152,6 +156,7 @@ class ForecastErrorLogs(models.Model):
 class PDSHeader(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
     forecast_id = models.ForeignKey(Forecast, verbose_name="Forecast ID", blank=False, null=False, on_delete=models.CASCADE, editable=False)
+    supplier_id = models.ForeignKey(Supplier, verbose_name="Supplier ID", blank=True, null=True, on_delete=models.SET_NULL)
     pds_date = models.DateField(verbose_name="PDS Date", blank=True, null=True)
     pds_no = models.CharField(max_length=15,verbose_name="PDS No.", blank=True, null=True)
     item = models.IntegerField(verbose_name="Item")
@@ -176,6 +181,10 @@ class PDSHeader(models.Model):
             (
                 "create_purchase_order",
                 "เปิด PO"
+            ),
+            (
+                "is_download_report",
+                "ดูรายงาน"
             )
         ]
         
@@ -210,3 +219,19 @@ class PDSDetail(models.Model):
                 "แก้ไขจำนวน/ราคา"
             )
         ]
+        
+        
+class DownLoadReport(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, verbose_name="PRIMARY KEY", default=uuid.uuid4)
+    file_name = models.CharField(max_length=255, blank=True, null=True, default="-")
+    report_name = models.CharField(max_length=255, verbose_name="Reporting Name")
+    report_type = models.CharField(max_length=50, verbose_name="Reporting Type")
+    report_count = models.IntegerField(verbose_name="Report Counting", blank=True, null=True, default="0")
+    is_active = models.BooleanField(verbose_name="Is Active", default=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = "logDownloadReport"
+        verbose_name = "Download Report"
+        verbose_name_plural = "Download Report"

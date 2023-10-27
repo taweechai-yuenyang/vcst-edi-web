@@ -478,9 +478,8 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
             sup_id.append(u.supplier_id)
         
         if request.user.groups.filter(name='Supplier').exists():
-            # obj = qs.filter(supplier_id__in=sup_id)
-            # return obj
-            obj = qs.filter(supplier_id__in=sup_id, forecast_status="1")
+            obj = qs.filter(supplier_id__in=sup_id)
+            # obj = qs.filter(supplier_id__in=sup_id, forecast_status="1")
             return obj
         
         return qs
@@ -671,7 +670,21 @@ class PDSHeaderAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context=extra_context,)
     
     def get_queryset(self, request):
-        return super().get_queryset(request)
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        
+        sup_id = []
+        usr = ManagementUser.supplier_id.through.objects.filter(managementuser_id=request.user.id)
+        for u in usr:
+            sup_id.append(u.supplier_id)
+        
+        if request.user.groups.filter(name='Supplier').exists():
+            obj = qs.filter(supplier_id__in=sup_id)
+            # obj = qs.filter(supplier_id__in=sup_id, forecast_status="1")
+            return obj
+        
+        return qs
     
     pass
 

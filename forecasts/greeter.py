@@ -193,6 +193,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             pds_no = f"PDS{str(dte.strftime('%Y%m'))[3:]}{pdsCount:04d}"
             try:
                 pdsHead = PDSHeader.objects.get(forecast_id=obj)
+                pdsHead.supplier_id = obj.supplier_id
                 pdsHead.pds_date = datetime.now()
                 pdsHead.pds_no = pds_no
                 pdsHead.item = 0
@@ -202,6 +203,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             except PDSHeader.DoesNotExist:
                 pdsHead = PDSHeader(
                     forecast_id = obj,
+                    supplier_id = obj.supplier_id,
                     pds_date = datetime.now(),
                     pds_no = pds_no,
                     item = 0,
@@ -376,6 +378,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
         
     except Exception as ex:
         messages.error(request, str(ex))
+        return False
         # pass
     
     return True
