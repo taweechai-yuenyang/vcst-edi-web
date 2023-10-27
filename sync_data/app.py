@@ -15,10 +15,10 @@ dbHost = '192.168.20.9:1433'
 dbUser = 'fm1234'
 dbPassword = 'x2y2'
 
-if bool(os.environ.get('DEBUG_MODE')):
-    dbHost = 'localhost:1433'
-    dbUser = 'sa'
-    dbPassword = 'ADSads123'
+# if bool(os.environ.get('DEBUG_MODE')):
+#     dbHost = 'localhost:1433'
+#     dbUser = 'sa'
+#     dbPassword = 'ADSads123'
 
 dbName = 'Formula'
 dbCharset = 'TIS-620'

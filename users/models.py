@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 ON_MONTH_LIST = [
+    ('0', '-'),
     ('1', 'January'), 
     ('2', 'February'), 
     ('3', 'March'), 
