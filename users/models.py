@@ -207,3 +207,4 @@ class PlanningForecast(models.Model):
         db_table = "tbmPlanningForecast"
         verbose_name = "PlanningForecast"
         verbose_name_plural = "Planning Forecast"
+        ordering = ("plan_year","plan_month", )

@@ -296,6 +296,27 @@ class LineNotificationAdmin(admin.ModelAdmin):
     pass
 
 class PlanningForecastAdmin(admin.ModelAdmin):
+    list_display = [
+        "plan_month",
+        "plan_year",
+        "plan_qty",
+        "revise_plan_qty",
+        "is_active",
+        "created_at",
+        "updated_at",
+    ]
+    
+    search_fields = [
+        "plan_month",
+        "plan_year",
+    ]
+    
+    list_filter = [
+        "plan_month",
+        "plan_year",
+        "is_active",
+    ]
+    
     pass
 
 admin.site.register(Corporation, CorporationAdmin,)
