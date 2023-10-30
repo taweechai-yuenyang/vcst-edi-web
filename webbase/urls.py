@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 from rest_framework_simplejwt import views as jv
+from forecasts.models import Forecast
+from open_pds.models import PDSHeader
 from users import urls as user_urls
 from products import urls as product_urls
 from books import urls as book_urls
 # from request_orders import urls as request_orders_urls
-from forecasts import urls as forecast_urls
+from forecasts import greeter, urls as forecast_urls
 
 admin.site.site_title = "EDI Web Application"
 admin.site.site_header = "EDI Web Application"
@@ -31,6 +33,8 @@ admin.site.site_url = "/"
 admin.site.enable_nav_sidebar = True
 admin.site.empty_value_display = "-"
 
+Forecast._meta.verbose_name_plural = "Upload Forecast"
+PDSHeader._meta.verbose_name_plural = "Open PO"
 
 urlpatterns = [
     path('tinymce/', include('tinymce.urls')),

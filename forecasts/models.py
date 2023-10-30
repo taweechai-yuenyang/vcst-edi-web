@@ -70,6 +70,10 @@ class Forecast(models.Model):
     def __str__(self):
         return self.forecast_no
     
+    def getattr(self, name):
+        print("getattr")
+        return self.forecast_no
+    
     class Meta:
         db_table = "ediForecast"
         verbose_name = "Forecast"

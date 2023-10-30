@@ -1,25 +1,17 @@
 import calendar
 import os
-from typing import Any
 from django.contrib import admin, messages
-from django.contrib.auth.models import Group, Permission
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models.query import QuerySet
-from django.views.generic import FormView
 from django.forms import BaseInlineFormSet
-from django.http.request import HttpRequest
 from django.shortcuts import redirect
 from django.utils.html import format_html
 from admin_confirm import AdminConfirmMixin
-import nanoid
 import numpy as np
 import pandas as pd
 import requests
 
 from books.models import ReviseBook
 from forecasts import greeter
-from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
-from products.models import Product, ProductGroup
+from products.models import Product
 from users.models import ManagementUser, PlanningForecast, Supplier
 from .models import FORECAST_ORDER_STATUS, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
 
@@ -483,6 +475,14 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
         #     return obj
         
         # return qs
+        
+        # Forecast._meta.verbose_name_plural = "Upload Forecast"
+        # if request.user.groups.filter(name='Purchase').exists():
+        #     Forecast._meta.verbose_name_plural = "Open PR"
+            
+        # elif request.user.groups.filter(name='Supplier').exists():
+        #     Forecast._meta.verbose_name_plural = "Data Forecast"
+            
         sup_id = []
         qs = super().get_queryset(request)
         if len(request.GET) > 0:
