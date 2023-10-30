@@ -264,13 +264,13 @@ def approve_forecast(request, id):
     if greeter.create_purchase_order(request, id):
         messages.success(request, f"บันทึกข้อมูลเรียบร้อยแล้ว")
             
-    return redirect(f"/portal/forecasts/forecast/")
+    return redirect(f"/admin/forecasts/forecast/")
 
 def create_po_forecast(request, id):
     if greeter.create_purchase_order(request, id, "PO", "002"):
         messages.success(request, f"บันทึกข้อมูลเรียบร้อยแล้ว")
             
-    return redirect(f"/portal/forecasts/pdsheader/")
+    return redirect(f"/admin/forecasts/pdsheader/")
 
 def pdf_forecast(request, id):
     response = HttpResponse(content_type='application/pdf')

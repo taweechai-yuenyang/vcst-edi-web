@@ -60,7 +60,7 @@ class PDSDetail(models.Model):
         db_table = "ediPDSDetail"
         verbose_name = "PDSDetail"
         verbose_name_plural = "PDS Detail"
-        # ordering = ('row_num','item','created_at','updated_at')
+        ordering = ('seq','forecast_detail_id','created_at','updated_at')
         permissions = [
             (
                 "create_purchase_order",

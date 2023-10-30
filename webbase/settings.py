@@ -351,7 +351,7 @@ JAZZMIN_SETTINGS = {
     # - vertical_tabs
     # - collapsible
     # - carousel
-    "changeform_format": "collapsible",
+    "changeform_format": "vertical_tabs",
     # override change forms on a per modeladmin basis
     "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
     # Add a language dropdown into the admin
@@ -378,9 +378,9 @@ JAZZMIN_UI_TWEAKS = {
     "sidebar_nav_compact_style": True,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": True,
-    # "theme": "default",
+    "theme": "default",
     # "theme": "journal",
-    'theme': 'united',
+    # 'theme': 'united',
     "dark_mode_theme": None,
     "button_classes": {
         "primary": "btn-primary",

@@ -20,8 +20,8 @@ class PDSDetailInlineAdmin(admin.TabularInline):
     )
     
     fields = [
-        'forecast_detail_id',
         'seq',
+        'forecast_detail_id',
         'qty',
         'price',
         'is_active',
