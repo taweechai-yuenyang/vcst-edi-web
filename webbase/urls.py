@@ -49,5 +49,6 @@ urlpatterns = [
     path('api/token/', jv.TokenObtainPairView.as_view()),
     path('api/token/refresh/', jv.TokenRefreshView.as_view()),
     path('admin/clearcache/', include('clearcache.urls')),
+    path("admin/", RedirectView.as_view(url="/portal/", permanent=True)),
     path("", RedirectView.as_view(url="/portal/", permanent=True)),
 ]
