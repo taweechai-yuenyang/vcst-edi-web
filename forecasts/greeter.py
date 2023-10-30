@@ -41,6 +41,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
         dept = DEPT.objects.filter(FCCODE=request.user.department_id.code).values()
         sect = SECT.objects.filter(FCCODE=request.user.section_id.code).values()
         ordBook = BOOK.objects.filter(FCREFTYPE=prefixRef, FCCODE=bookGroup).values()
+        corp = CORP.objects.filter(FCCODE="2023 (2566)").values()
         fcStep = "1"
         if prefixRef == "PO":
             fcStep = "P"
@@ -51,7 +52,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             prNo = f"{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
             msg = f"message=เรียนแผนก PU\nขณะนี้ทางแผนก Planning ได้ทำการเปิดเอกสาร{str(ordBook[0]['FCNAME']).strip()} เลขที่ {prNo} เรียบร้อยแล้วคะ"
             ### Get Supplier Information
-            supplier = CORP.objects.filter(FCCODE=obj.forecast_id.supplier_id.code).values()
+            supplier = COOR.objects.filter(FCCODE=obj.forecast_id.supplier_id.code).values()
             ordH = None
             if obj.ref_formula_id is None:
                 ordH = OrderH(
@@ -65,6 +66,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     FCCODE=fccodeNo,
                     FCREFNO=prNo,
                     FCCOOR=supplier[0]['FCSKID'],
+                    FCCORP=corp[0]['FCSKID'],
                     FDDATE=obj.pds_date,
                     FDDUEDATE=obj.pds_date,
                     FNAMT=obj.qty,
@@ -81,6 +83,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 ordH.FCCREATEBY=emp[0]['FCSKID']
                 ordH.FCAPPROVEB=emp[0]['FCSKID']
                 ordH.FCCOOR=supplier[0]['FCSKID']
+                ordH.FCCORP=corp[0]['FCSKID']
                 ordH.FDDATE=obj.pds_date
                 ordH.FDDUEDATE=obj.pds_date
                 ordH.FNAMT=obj.qty
@@ -100,6 +103,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 try:
                     ordI = OrderI.objects.get(FCSKID=i.ref_formula_id)
                     ordI.FCCOOR=supplier[0]['FCSKID']
+                    ordI.FCCORP=corp[0]['FCSKID']
                     ordI.FCDEPT=dept[0]['FCSKID']
                     ordI.FCORDERH=ordH.FCSKID
                     ordI.FCPROD=ordProd[0]["FCSKID"]
@@ -126,6 +130,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     ordI = OrderI(
                         FCSKID=nanoid.generate(size=8),
                         FCCOOR=supplier[0]['FCSKID'],
+                        FCCORP=corp[0]['FCSKID'],
                         FCDEPT=dept[0]['FCSKID'],
                         FCORDERH=ordH.FCSKID,
                         FCPROD=ordProd[0]["FCSKID"],
@@ -187,6 +192,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                         FCU1ACC="",
                         FCUDATE="",
                         FCUTIME="",
+                        FCCORP=corp[0]['FCSKID']
                     )
                 noteCut.save()
                 # Update Status Order Details
@@ -252,6 +258,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     FCCODE=fccodeNo,
                     FCREFNO=prNo,
                     FCCOOR=supplier[0]['FCSKID'],
+                    FCCORP=corp[0]['FCSKID'],
                     FDDATE=obj.forecast_date,
                     FDDUEDATE=obj.forecast_date,
                     FNAMT=obj.forecast_qty,
@@ -269,6 +276,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 ordH.FCCREATEBY=emp[0]['FCSKID']
                 ordH.FCAPPROVEB=emp[0]['FCSKID']
                 ordH.FCCOOR=supplier[0]['FCSKID']
+                ordH.FCCORP=corp[0]['FCSKID']
                 ordH.FDDATE=obj.forecast_date
                 ordH.FDDUEDATE=obj.forecast_date
                 ordH.FNAMT=obj.forecast_qty
@@ -317,6 +325,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     try:
                         ordI = OrderI.objects.get(FCSKID=i.ref_formula_id)
                         ordI.FCCOOR=supplier[0]['FCSKID']
+                        ordI.FCCORP=corp[0]['FCSKID']
                         ordI.FCDEPT=dept[0]['FCSKID']
                         ordI.FCORDERH=ordH.FCSKID
                         ordI.FCPROD=ordProd[0]["FCSKID"]
@@ -343,6 +352,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                         ordI = OrderI(
                             FCSKID=nanoid.generate(size=8),
                             FCCOOR=supplier[0]['FCSKID'],
+                            FCCORP=corp[0]['FCSKID'],
                             FCDEPT=dept[0]['FCSKID'],
                             FCORDERH=ordH.FCSKID,
                             FCPROD=ordProd[0]["FCSKID"],
