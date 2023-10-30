@@ -37,6 +37,6 @@ class MyAdminSite(admin.AdminSite):
     
     pass
 
-admin_site = MyAdminSite()
+admin_site = MyAdminSite(name="WebMin")
 admin_site.register(Forecast,ForecastAdmin)
 admin_site.register(PDSHeader,PDSHeaderAdmin)
