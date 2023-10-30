@@ -41,8 +41,9 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
         dept = DEPT.objects.filter(FCCODE=request.user.department_id.code).values()
         sect = SECT.objects.filter(FCCODE=request.user.section_id.code).values()
         ordBook = BOOK.objects.filter(FCREFTYPE=prefixRef, FCCODE=bookGroup).values()
-        
+        fcStep = "1"
         if prefixRef == "PO":
+            fcStep = "P"
             obj = PDSHeader.objects.get(id=id)
             fccode = obj.pds_date.strftime("%Y%m%d")[3:6]
             ordRnd = OrderH.objects.filter(FCCODE__gte=fccode).count() + 1
@@ -67,6 +68,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     FDDATE=obj.pds_date,
                     FDDUEDATE=obj.pds_date,
                     FNAMT=obj.qty,
+                    FCSTEP=fcStep,
                 )
                 obj.ref_formula_id = ordH.FCSKID
                 
@@ -82,6 +84,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 ordH.FDDATE=obj.pds_date
                 ordH.FDDUEDATE=obj.pds_date
                 ordH.FNAMT=obj.qty
+                ordH.FCSTEP=fcStep
                 pass
             
             ordH.save()
@@ -117,6 +120,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     ordI.FNPRICE=ordProd[0]['FNPRICE']
                     ordI.FNPRICEKE=ordProd[0]['FNPRICE']
                     ordI.FCSHOWCOMP=""
+                    ordI.FCSTEP=fcStep
                         
                 except OrderI.DoesNotExist as e:
                     ordI = OrderI(
@@ -139,6 +143,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                         FNPRICE=ordProd[0]['FNPRICE'],
                         FNPRICEKE=ordProd[0]['FNPRICE'],
                         FCSHOWCOMP="",
+                        FCSTEP=fcStep,
                     )
                     pass
                 
@@ -148,6 +153,15 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 orderPRID = obj.forecast_id.ref_formula_id
                 orderPRDetailID = i.forecast_detail_id.ref_formula_id
                 
+                ### Update PR to FCSTEP='P'
+                prHeader = OrderH.objects.get(FCSKID=orderPRID)
+                prHeader.FCSTEP = fcStep
+                prHeader.save()
+                
+                prDetail = OrderI.objects.get(FCSKID=orderPRDetailID)
+                prDetail.FCSTEP = fcStep
+                prDetail.save()
+                #### End Update FCSTEP
                 
                 orderPOID = ordH.FCSKID
                 orderPODetailID = ordI.FCSKID
@@ -241,6 +255,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     FDDATE=obj.forecast_date,
                     FDDUEDATE=obj.forecast_date,
                     FNAMT=obj.forecast_qty,
+                    FCSTEP=fcStep,
                 )
                 ordH.save()
                 obj.ref_formula_id = ordH.FCSKID
@@ -257,6 +272,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 ordH.FDDATE=obj.forecast_date
                 ordH.FDDUEDATE=obj.forecast_date
                 ordH.FNAMT=obj.forecast_qty
+                ordH.FCSTEP=fcStep
                 ordH.save()
                 msg = f"message=เรียนแผนก Planning\nขณะนี้ทางแผนก PU ได้ทำการอนุมัติเอกสาร {ordH.FCREFNO} เรียบร้อยแล้วคะ"
                 pass
@@ -317,6 +333,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                         #### Update Nagative to Positive
                         olderQty = int(ordI.FNBACKQTY)
                         ordI.FNBACKQTY=abs(int(i.request_qty)-olderQty)
+                        ordI.FCSTEP = fcStep
                         ######
                         ordI.FNPRICE=ordProd[0]['FNPRICE']
                         ordI.FNPRICEKE=ordProd[0]['FNPRICE']
@@ -343,6 +360,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                             FNPRICE=ordProd[0]['FNPRICE'],
                             FNPRICEKE=ordProd[0]['FNPRICE'],
                             FCSHOWCOMP="",
+                            FCSTEP = fcStep,
                         )
                         pass
                     
