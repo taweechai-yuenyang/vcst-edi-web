@@ -139,7 +139,7 @@ class OrderH(models.Model):
     FCAPPROVEB = models.CharField(max_length=8, db_column="FCAPPROVEB", blank=True, null=True)
     FCDELICOOR = models.CharField(max_length=8, db_column="FCDELICOOR", default="H2ZMtM8R",blank=True, null=True)
     FCCREATEAP = models.CharField(max_length=8, db_column="FCCREATEAP", default="$/",blank=True, null=True)
-    FCISPDPART = models.CharField(max_length=1, db_column="FCISPDPART", default="1",blank=True, null=True)
+    FCISPDPART = models.CharField(max_length=1, db_column="FCISPDPART", blank=True, null=True)
     FDDATE = models.DateField(db_column="FDDATE")
     FDDUEDATE = models.DateTimeField(db_column="FDDUEDATE", auto_now=True)
     FDRECEDATE = models.DateField(db_column="FDRECEDATE", auto_now=True)
