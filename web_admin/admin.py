@@ -20,7 +20,7 @@ class MyAdminSite(admin.AdminSite):
     
     def has_permission(self, request):
         Forecast._meta.verbose_name_plural = "Upload Forecast"
-        PDSHeader._meta.verbose_name_plural = "Open PO"
+        PDSHeader._meta.verbose_name_plural = "Open PDS"
         if request.user.groups.filter(name='Purchase').exists():
             Forecast._meta.verbose_name_plural = "Open PR"
             PDSHeader._meta.verbose_name_plural = "View PR"
