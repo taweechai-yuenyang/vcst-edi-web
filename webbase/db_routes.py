@@ -10,6 +10,7 @@ class DBRouter:
         "JOB",
         "BOOK",
         "COOR",
+        "CORP",
         "PROD",
         "UM",
         "ORDERH",

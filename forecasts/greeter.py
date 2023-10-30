@@ -20,7 +20,7 @@ import requests
 
 from forecasts.models import Forecast, ForecastDetail
 from open_pds.models import PDSDetail, PDSHeader
-from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, NoteCut, OrderH, OrderI
+from formula_vcst.models import BOOK, COOR, CORP, DEPT, EMPLOYEE, PROD, SECT, UM, NoteCut, OrderH, OrderI
 
 def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
     dte = datetime.now()
@@ -50,7 +50,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             prNo = f"{str(ordBook[0]['FCPREFIX']).strip()}{fccodeNo}"### PR TEST REFNO
             msg = f"message=เรียนแผนก PU\nขณะนี้ทางแผนก Planning ได้ทำการเปิดเอกสาร{str(ordBook[0]['FCNAME']).strip()} เลขที่ {prNo} เรียบร้อยแล้วคะ"
             ### Get Supplier Information
-            supplier = COOR.objects.filter(FCCODE=obj.forecast_id.supplier_id.code).values()
+            supplier = CORP.objects.filter(FCCODE=obj.forecast_id.supplier_id.code).values()
             ordH = None
             if obj.ref_formula_id is None:
                 ordH = OrderH(

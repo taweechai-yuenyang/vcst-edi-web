@@ -75,6 +75,18 @@ class COOR(models.Model):
         db_table = "COOR"
         app_label = "formula_vcst"
         
+class CORP(models.Model):
+    FCSKID = models.CharField(max_length=8, db_column="FCSKID",primary_key=True, editable=False)
+    FCCODE = models.CharField(max_length=30, db_column="FCCODE")
+    FCNAME = models.CharField(max_length=30, db_column="FCNAME")
+    
+    def __str__(self):
+        return self.FCSKID
+    
+    class Meta:
+        db_table = "CORP"
+        app_label = "formula_vcst"
+        
 class PROD(models.Model):
     FCSKID = models.CharField(max_length=8, db_column="FCSKID",primary_key=True, editable=False)
     FCCODE = models.CharField(max_length=30, db_column="FCCODE")
