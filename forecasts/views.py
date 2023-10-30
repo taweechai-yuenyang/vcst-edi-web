@@ -18,7 +18,8 @@ from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
 import pdfkit
 from forecasts import greeter
-from forecasts.models import DownLoadReport, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs, PDSDetail, PDSHeader
+from forecasts.models import DownLoadReport, FileForecast, Forecast, ForecastDetail, ForecastErrorLogs
+from open_pds.models import PDSDetail, PDSHeader
 from forecasts.serializers import FileForecastSerializer
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, OrderH, OrderI
 

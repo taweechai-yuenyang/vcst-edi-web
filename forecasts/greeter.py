@@ -18,7 +18,8 @@ styleH = styles['Heading1']
 import nanoid
 import requests
 
-from forecasts.models import Forecast, ForecastDetail, PDSDetail, PDSHeader
+from forecasts.models import Forecast, ForecastDetail
+from open_pds.models import PDSDetail, PDSHeader
 from formula_vcst.models import BOOK, COOR, DEPT, EMPLOYEE, PROD, SECT, UM, NoteCut, OrderH, OrderI
 
 def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
