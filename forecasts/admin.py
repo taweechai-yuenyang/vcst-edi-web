@@ -475,14 +475,6 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
         #     return obj
         
         # return qs
-        
-        Forecast._meta.verbose_name_plural = "Upload Forecast"
-        if request.user.groups.filter(name='Purchase').exists():
-            Forecast._meta.verbose_name_plural = "Open PR"
-            
-        elif request.user.groups.filter(name='Supplier').exists():
-            Forecast._meta.verbose_name_plural = "Data Forecast"
-            
         sup_id = []
         qs = super().get_queryset(request)
         if len(request.GET) > 0:

@@ -208,7 +208,7 @@ JAZZMIN_SETTINGS = {
     # "site_header": "EDI App",
 
     # # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    # "site_brand": "EDI",
+    "site_brand": "Web EDI Management",
 
     # # # Logo to use for your site, must be present in static files, used for brand on top left
     "site_logo": "image/menu_logo.png",

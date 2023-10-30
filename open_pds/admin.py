@@ -165,13 +165,6 @@ class PDSHeaderAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context=extra_context,)
     
     def get_queryset(self, request):
-        PDSHeader._meta.verbose_name_plural = "Open PO"
-        if request.user.groups.filter(name='Purchase').exists():
-            PDSHeader._meta.verbose_name_plural = "View PR"
-            
-        elif request.user.groups.filter(name='Supplier').exists():
-            PDSHeader._meta.verbose_name_plural = "Data PO"
-        
         sup_id = []
         qs = super().get_queryset(request)
         if len(request.GET) > 0:
