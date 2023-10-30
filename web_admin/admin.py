@@ -23,7 +23,7 @@ class MyAdminSite(admin.AdminSite):
         PDSHeader._meta.verbose_name_plural = "Open PDS"
         if request.user.groups.filter(name='Purchase').exists():
             Forecast._meta.verbose_name_plural = "Open PR"
-            PDSHeader._meta.verbose_name_plural = "View PR"
+            PDSHeader._meta.verbose_name_plural = "View PDS"
             
         elif request.user.groups.filter(name='Supplier').exists():
             Forecast._meta.verbose_name_plural = "Data Forecast"
