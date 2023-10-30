@@ -25,6 +25,7 @@ from products import urls as product_urls
 from books import urls as book_urls
 # from request_orders import urls as request_orders_urls
 from forecasts import greeter, urls as forecast_urls
+# from forecasts.admin import admin_site
 
 admin.site.site_title = "EDI Web Application"
 admin.site.site_header = "EDI Web Application"
@@ -39,6 +40,7 @@ PDSHeader._meta.verbose_name_plural = "Open PO"
 urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
     path("portal/", admin.site.urls, name="admin"),
+    # path("portal/", admin_site.urls, name="admin"),
     path("forecast/", include(forecast_urls), name="export_error_logs"),
     path("api/users/", include(user_urls)),
     path("api/products/", include(product_urls)),

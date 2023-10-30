@@ -510,6 +510,10 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
 class ForecastErrorLogsAdmin(admin.ModelAdmin):
     pass
 
+# class MyAdminSite(admin.AdminSite):
+#     def index(self, request, extra_context=None):
+#         return super().index(request, extra_context=extra_context)
+
 # admin.site.unregister(FileForecast)
 # admin.site.unregister(ForecastDetail)
 admin.site.register(FileForecast, FileForecastAdmin)
@@ -517,3 +521,8 @@ admin.site.register(Forecast, ForecastAdmin)
 # admin.site.register(ForecastDetail, ForecastDetailAdmin)
 admin.site.register(ForecastErrorLogs, ForecastErrorLogsAdmin)
 # admin.site.register(PDSHeader, PDSHeaderAdmin)
+
+# admin_site = MyAdminSite()
+# admin_site.register(FileForecast, FileForecastAdmin)
+# admin_site.register(Forecast, ForecastAdmin)
+# admin_site.register(ForecastErrorLogs, ForecastErrorLogsAdmin)
