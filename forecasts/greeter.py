@@ -92,7 +92,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             
             ordH.save()
             
-            ordDetail = PDSDetail.objects.filter(pds_header_id=obj).all()
+            ordDetail = PDSDetail.objects.filter(pds_header_id=obj, qty__gt=0).all()
             seq = 1
             qty = 0
             summary_price = 0
@@ -207,6 +207,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             obj.save()
             requests.request("POST", "https://notify-api.line.me/api/notify", headers=headers, data=msg.encode("utf-8"))
         else:
+            ### Create PR
             obj = Forecast.objects.get(id=id)
             ### Create PDSHeader
             pdsHead = None
@@ -287,7 +288,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
             
             # ### OrderI
             # # Get Order Details
-            ordDetail = ForecastDetail.objects.filter(forecast_id=obj).all()
+            ordDetail = ForecastDetail.objects.filter(forecast_id=obj, request_qty__gt=0).all()
             seq = 1
             qty = 0
             summary_price = 0
