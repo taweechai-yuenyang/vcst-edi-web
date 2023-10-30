@@ -30,6 +30,11 @@ class MyAdminSite(admin.AdminSite):
             PDSHeader._meta.verbose_name_plural = "Data PO"
         
         return super().has_permission(request)
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        return urls
+    
     pass
 
 admin_site = MyAdminSite()

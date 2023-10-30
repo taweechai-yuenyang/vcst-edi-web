@@ -27,17 +27,20 @@ from books import urls as book_urls
 from forecasts import greeter, urls as forecast_urls
 from web_admin.admin import admin_site
 
-# admin.site.site_title = "EDI Web Application"
-# admin.site.site_header = "EDI Web Application"
-# admin.site.index_title = "EDI Management System"
-# admin.site.site_url = "/"
-# admin.site.enable_nav_sidebar = True
-# admin.site.empty_value_display = "-"
+admin.site.site_title = "EDI Web Application"
+admin.site.site_header = "EDI Web Application"
+admin.site.index_title = "EDI Management System"
+admin.site.site_url = "/"
+admin.site.enable_nav_sidebar = True
+admin.site.empty_value_display = "-"
+
+Forecast._meta.verbose_name_plural = "Upload Forecast"
+PDSHeader._meta.verbose_name_plural = "Open PO"
 
 urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
-    # path("portal/", admin.site.urls, name="admin"),
-    path("portal/", admin_site.urls, name="admin"),
+    path("admin/", admin.site.urls, name="admin"),
+    path("portal/", admin_site.urls, name="web_admin_portal"),
     path("forecast/", include(forecast_urls), name="export_error_logs"),
     path("api/users/", include(user_urls)),
     path("api/products/", include(product_urls)),
@@ -45,7 +48,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api/token/', jv.TokenObtainPairView.as_view()),
     path('api/token/refresh/', jv.TokenRefreshView.as_view()),
-    path("admin/", RedirectView.as_view(url="/portal/", permanent=True)),
     path('admin/clearcache/', include('clearcache.urls')),
+    path("portal/", RedirectView.as_view(url="/admin/", permanent=True)),
     path("", RedirectView.as_view(url="/portal/", permanent=True)),
 ]

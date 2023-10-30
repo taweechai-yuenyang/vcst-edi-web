@@ -265,7 +265,7 @@ JAZZMIN_SETTINGS = {
     # Additional links to include in the user menu on the top right ("app" url type is not allowed)
     "usermenu_links": [
         # {"name": "Support", "url": "https://abe27.github.io","icon": "fas fa-comments", "new_window": True},
-        {"model": "auth.user"}
+        {"name": "Management","model": "auth.user"}
     ],
 
     #############
