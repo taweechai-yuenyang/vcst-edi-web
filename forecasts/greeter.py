@@ -62,7 +62,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     FCSECT=sect[0]['FCSKID'],
                     FCBOOK=ordBook[0]['FCSKID'],
                     FCCREATEBY=emp[0]['FCSKID'],
-                    FCAPPROVEB=emp[0]['FCSKID'],
+                    FCAPPROVEB="",
                     FCCODE=fccodeNo,
                     FCREFNO=prNo,
                     FCCOOR=supplier[0]['FCSKID'],
@@ -81,7 +81,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 ordH.FCSECT=sect[0]['FCSKID']
                 ordH.FCBOOK=ordBook[0]['FCSKID']
                 ordH.FCCREATEBY=emp[0]['FCSKID']
-                ordH.FCAPPROVEB=emp[0]['FCSKID']
+                ordH.FCAPPROVEB=""
                 ordH.FCCOOR=supplier[0]['FCSKID']
                 ordH.FCCORP=corp[0]['FCSKID']
                 ordH.FDDATE=obj.pds_date
@@ -255,7 +255,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                     FCSECT=sect[0]['FCSKID'],
                     FCBOOK=ordBook[0]['FCSKID'],
                     FCCREATEBY=emp[0]['FCSKID'],
-                    FCAPPROVEB=emp[0]['FCSKID'],
+                    FCAPPROVEB="",
                     FCCODE=fccodeNo,
                     FCREFNO=prNo,
                     FCCOOR=supplier[0]['FCSKID'],
@@ -275,7 +275,7 @@ def create_purchase_order(request, id, prefixRef="PR", bookGroup="0002"):
                 ordH.FCSECT=sect[0]['FCSKID']
                 ordH.FCBOOK=ordBook[0]['FCSKID']
                 ordH.FCCREATEBY=emp[0]['FCSKID']
-                ordH.FCAPPROVEB=emp[0]['FCSKID']
+                ordH.FCAPPROVEB=""
                 ordH.FCCOOR=supplier[0]['FCSKID']
                 ordH.FCCORP=corp[0]['FCSKID']
                 ordH.FDDATE=obj.forecast_date
