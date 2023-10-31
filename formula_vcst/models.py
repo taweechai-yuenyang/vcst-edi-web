@@ -120,12 +120,12 @@ class OrderH(models.Model):
     FCLUPDAPP = models.CharField(max_length=2, db_column="FCLUPDAPP", blank=True, null=True, default="$/")
     FCRFTYPE = models.CharField(max_length=1, db_column="FCRFTYPE", default="w", blank=True, null=True)### Reference
     FCREFTYPE = models.CharField(max_length=2, db_column="FCREFTYPE")### Reference PR/PO
-    FCCORP = models.CharField(max_length=8, db_column="FCCORP", default="H2ZMtM8R", blank=True, null=True)
+    FCCORP = models.CharField(max_length=8, db_column="FCCORP", default="H2ZFEv02", blank=True, null=True)
     FCBRANCH = models.CharField(max_length=8, db_column="FCBRANCH", default="H2Z2kf01", blank=True, null=True)
     FCDEPT = models.CharField(max_length=8, db_column="FCDEPT")### Reference DEPT
     FCSECT = models.CharField(max_length=8, db_column="FCSECT")### Reference SECT
     FCJOB = models.CharField(max_length=8, db_column="FCJOB", default="H2ZFfr02", blank=True, null=True)
-    FCSTEP = models.CharField(max_length=1, db_column="FCSTEP", default="P", blank=True, null=True)
+    FCSTEP = models.CharField(max_length=1, db_column="FCSTEP", default="1", blank=True, null=True)
     FCBOOK = models.CharField(max_length=8, db_column="FCBOOK", default="JIXeqL01", blank=True, null=True)
     FCCODE = models.CharField(max_length=30, db_column="FCCODE")
     FCREFNO = models.CharField(max_length=35, db_column="FCREFNO")
@@ -137,7 +137,7 @@ class OrderH(models.Model):
     FCEAFTERR = models.CharField(max_length=1, db_column="FCEAFTERR", default="E",blank=True, null=True)
     FCPROJ = models.CharField(max_length=8, db_column="FCPROJ", default="x/•ู((()",blank=True, null=True)
     FCAPPROVEB = models.CharField(max_length=8, db_column="FCAPPROVEB", blank=True, null=True)
-    FCDELICOOR = models.CharField(max_length=8, db_column="FCDELICOOR", default="H2ZMtM8R",blank=True, null=True)
+    FCDELICOOR = models.CharField(max_length=8, db_column="FCDELICOOR", default="",blank=True, null=True)
     FCCREATEAP = models.CharField(max_length=8, db_column="FCCREATEAP", default="$/",blank=True, null=True)
     FCISPDPART = models.CharField(max_length=1, db_column="FCISPDPART", default="",blank=True, null=True)
     FDDATE = models.DateField(db_column="FDDATE")
@@ -166,7 +166,7 @@ class OrderH(models.Model):
 class OrderI(models.Model):
     FCBRANCH= models.CharField(max_length=8, db_column="FCBRANCH", default="H2Z2kf01", blank=True, null=True)
     FCCOOR = models.CharField(max_length=8, db_column="FCCOOR")### Reference
-    FCCORP = models.CharField(max_length=8, db_column="FCCORP", default="H2ZMtM8R", blank=True, null=True)
+    FCCORP = models.CharField(max_length=8, db_column="FCCORP", default="H2ZFEv02", blank=True, null=True)
     FCCREATEAP = models.CharField(max_length=2, db_column="FCCREATEAP", default="$/", blank=True, null=True)
     FCDATASER = models.CharField(max_length=4, db_column="FCDATASER", default="$$$+", blank=True, null=True)
     FCDEPT = models.CharField(max_length=8, db_column="FCDEPT")## Refrence
@@ -184,7 +184,7 @@ class OrderI(models.Model):
     FCSEQ = models.CharField(max_length=4, db_column="FCSEQ")### 001
     FCSHOWCOMP = models.CharField(max_length=1, db_column="FCSHOWCOMP", blank=True, null=True)
     FCSKID = models.CharField(max_length=8, db_column="FCSKID",primary_key=True, editable=False)
-    FCSTEP = models.CharField(max_length=1, db_column="FCSTEP", default="P", blank=True, null=True)
+    FCSTEP = models.CharField(max_length=1, db_column="FCSTEP", default="1", blank=True, null=True)
     FCSTUM = models.CharField(max_length=8, db_column="FCSTUM")### ref unit
     FCUM = models.CharField(max_length=8, db_column="FCUM")### ref unit
     FCUMSTD = models.CharField(max_length=8, db_column="FCUMSTD")### ref unit
@@ -218,7 +218,7 @@ class NoteCut(models.Model):
     FCCHILDH = models.CharField(max_length=8, db_column="FCCHILDH", blank=True, null=True)### ref ORDERH PR record
     FCCHILDI = models.CharField(max_length=8, db_column="FCCHILDI", blank=True, null=True)### ref ORDERI PR record
     FCCHILDTYP = models.CharField(max_length=2, db_column="FCCHILDTYP", blank=True, null=True, default="PR")
-    FCCORP = models.CharField(max_length=8, db_column="FCCORP", blank=True, null=True, default="H2Z2kf01")
+    FCCORP = models.CharField(max_length=8, db_column="FCCORP", blank=True, null=True, default="H2ZFEv02")
     FCCORRECTB = models.CharField(max_length=8, db_column="FCCORRECTB", blank=True, null=True)
     FCCREATEAP = models.CharField(max_length=2, db_column="FCCREATEAP", blank=True, null=True, default="$/")
     FCCREATEBY = models.CharField(max_length=8, db_column="FCCREATEBY", blank=True, null=True)
