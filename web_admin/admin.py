@@ -19,13 +19,15 @@ class MyAdminSite(admin.AdminSite):
     empty_value_display = "-"
     
     def has_permission(self, request):
+        # print(request.user.groups.filter(name='Supplier').exists())
+        # print("You have permission to")
         Forecast._meta.verbose_name_plural = "Upload Forecast"
         PDSHeader._meta.verbose_name_plural = "Open PDS"
         if request.user.groups.filter(name='Purchase').exists():
             Forecast._meta.verbose_name_plural = "Open PR"
             PDSHeader._meta.verbose_name_plural = "View PDS"
             
-        elif request.user.groups.filter(name='Supplier').exists():
+        if request.user.groups.filter(name='Supplier').exists():
             Forecast._meta.verbose_name_plural = "Data Forecast"
             PDSHeader._meta.verbose_name_plural = "Data PO"
         
