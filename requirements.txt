@@ -18,6 +18,7 @@ django-clearcache==1.2.1
 django-filter==23.3
 django-import-export==3.3.1
 django-jazzmin==2.6.0
+django-jazzmin-admin-rangefilter==1.0.0
 django-migrations-tui==0.1.9
 django-templated-mail==1.1.1
 django-tinymce==3.6.1

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_migrations_tui',
     'tinymce',
     "djoser",
+    'rangefilter',
     "rest_framework",
     'rest_framework_simplejwt',
     'users.apps.UsersConfig',
