@@ -5,7 +5,6 @@ from django.forms import BaseInlineFormSet
 from django.shortcuts import redirect
 from django.utils.html import format_html
 from admin_confirm import AdminConfirmMixin
-from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter, NumericRangeFilter
 import numpy as np
 import pandas as pd
 import requests
@@ -358,7 +357,7 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
     )
     
     list_filter = (
-        ('forecast_date', DateRangeFilter),
+        "forecast_date",
         "supplier_id",
         "forecast_status",
     )

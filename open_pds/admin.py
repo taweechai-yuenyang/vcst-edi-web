@@ -3,7 +3,6 @@ from django.contrib import admin, messages
 from django.contrib.admin.sites import AdminSite
 from django.utils.html import format_html
 from forecasts import greeter
-from rangefilter.filter import DateRangeFilter
 from forecasts.models import FORECAST_ORDER_STATUS
 
 from users.models import ManagementUser
@@ -91,7 +90,7 @@ class PDSHeaderAdmin(admin.ModelAdmin):
         "is_active",
     ]
     
-    list_filter = [('pds_date', DateRangeFilter), "supplier_id", "pds_status"]
+    list_filter = ["pds_date", "supplier_id", "pds_status"]
     
     actions = [mark_as_po]
     def has_change_permission(self, request, obj=None):
