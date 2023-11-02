@@ -28,8 +28,8 @@ class MyAdminSite(admin.AdminSite):
             PDSHeader._meta.verbose_name_plural = "View PDS"
             
         if request.user.groups.filter(name='Supplier').exists():
-            Forecast._meta.verbose_name_plural = "Data Forecast"
-            PDSHeader._meta.verbose_name_plural = "Data PO"
+            Forecast._meta.verbose_name_plural = "View Forecast"
+            PDSHeader._meta.verbose_name_plural = "View PDS"
         
         return super().has_permission(request)
     
