@@ -39,6 +39,7 @@ PDSHeader._meta.verbose_name_plural = "Open PO"
 
 urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
+    # path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
     path("admin/", admin.site.urls, name="admin"),
     path("portal/", admin_site.urls, name="web_admin_portal"),
     path("forecast/", include(forecast_urls), name="export_error_logs"),

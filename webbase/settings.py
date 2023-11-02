@@ -37,6 +37,9 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'clearcache',
     'jazzmin',
+    # "semantic_admin",
+    # 'jet',
+    'related_admin',
     'admin_confirm',
     'django.contrib.admin',
     'django.contrib.auth',
