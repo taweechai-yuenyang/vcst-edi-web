@@ -346,18 +346,18 @@ class ForecastAdmin(AdminConfirmMixin, admin.ModelAdmin):
     inlines = [ProductPDSDetailInline]
     list_display = (
         "forecast_no",
-        "forecast_date_on",
+        "forecast_on_month",
         "supplier_id",
         "book_id",
         "forecast_item",
         "forecast_qty",
-        "price",
+        # "price",
         "status",
         "updated_on",
     )
     
     list_filter = (
-        "forecast_date",
+        "forecast_on_month",
         "supplier_id",
         "forecast_status",
     )
